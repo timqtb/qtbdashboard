@@ -646,7 +646,7 @@ async function loadData() {
   $('status-text').textContent = 'Loading data from Google Sheets...';
 
   try {
-    const res = await fetch(SHEET_URL);
+    const res = await fetch(SHEET_URL + '&cachebust=' + Date.now());
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const text = await res.text();
     const data = parseCSV(text);
