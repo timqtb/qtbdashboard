@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Queen Takes Book — Owner Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  /* ── Reset & Base ── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --dark:       #2C2C2C;
+    --mid:        #666666;
+    --light:      #AAAAAA;
+    --rule:       #E0DDD6;
+    --card:       #F7F6F3;
+    --white:      #FFFFFF;
+    --accent:     #7F77DD;
+    --accent-lt:  #EEEDFE;
+    --green:      #1D9E75;
+    --green-lt:   #E1F5EE;
+    --green-dk:   #0F6E56;
+    --amber:      #EF9F27;
+    --amber-lt:   #FAEEDA;
+    --amber-dk:   #854F0B;
+    --red:        #E24B4A;
+    --red-lt:     #FCEBEB;
+    --red-dk:     #A32D2D;
+    --page:       #EDEBE6;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    background: var(--page);
+    color: var(--dark);
+    min-height: 100vh;
+    padding: 24px 20px;
+  }
+
+  /* ── Layout ── */
+  .page { max-width: 900px; margin: 0 auto; }
+
+  /* ── Header ── */
+  .header {
+    background: var(--dark);
+    border-radius: 12px;
+    padding: 18px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  .header-left h1 { color: #fff; font-size: 17px; font-weight: 600; letter-spacing: -0.01em; }
+  .header-left p  { color: var(--light); font-size: 12px; margin-top: 2px; }
+  .header-right   { text-align: right; }
+  .period-badge {
+    background: rgba(255,255,255,0.1);
+    color: #ccc;
+    font-size: 11px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    display: inline-block;
+  }
+  .last-updated { color: var(--light); font-size: 10px; margin-top: 4px; }
+
+  /* ── Loading / Error ── */
+  .status-bar {
+    background: var(--accent-lt);
+    color: var(--accent);
+    font-size: 12px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    display: none;
+    align-items: center;
+    gap: 8px;
+  }
+  .status-bar.visible { display: flex; }
+  .status-bar.error   { background: var(--red-lt); color: var(--red-dk); }
+  .spinner {
+    width: 12px; height: 12px;
+    border: 2px solid currentColor;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    flex-shrink: 0;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Section headers ── */
+  .section-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--light);
+    margin: 20px 0 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 0.5px;
+    background: var(--rule);
+  }
+
+  /* ── Metric cards grid ── */
+  .metric-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+  .metric-grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  @media (max-width: 600px) {
+    .metric-grid, .metric-grid-3 { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  .metric-card {
+    background: var(--card);
+    border-radius: 10px;
+    padding: 14px 14px 10px;
+  }
+  .metric-label {
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--mid);
+    margin-bottom: 6px;
+  }
+  .metric-value {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--dark);
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+  .metric-sub {
+    font-size: 10px;
+    margin-top: 6px;
+    font-weight: 500;
+  }
+  .up   { color: var(--green); }
+  .down { color: var(--red); }
+  .flat { color: var(--light); }
+
+  /* ── Chart row ── */
+  .chart-row {
+    display: grid;
+    grid-template-columns: 1.65fr 1fr;
+    gap: 10px;
+    margin-top: 2px;
+  }
+  @media (max-width: 600px) { .chart-row { grid-template-columns: 1fr; } }
+
+  .chart-card {
+    background: var(--card);
+    border-radius: 10px;
+    padding: 14px 16px;
+  }
+  .chart-title {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--mid);
+    margin-bottom: 10px;
+  }
+
+  /* ── Donut wrapper ── */
+  .donut-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 130px;
+  }
+  .donut-canvas-wrap { position: relative; height: 100px; width: 100px; }
+  .donut-legend {
+    display: flex;
+    gap: 14px;
+    margin-top: 8px;
+    font-size: 10px;
+    color: var(--mid);
+  }
+  .legend-dot {
+    width: 8px; height: 8px;
+    border-radius: 2px;
+    display: inline-block;
+    margin-right: 4px;
+    vertical-align: middle;
+  }
+
+  /* ── Health cards ── */
+  .health-card {
+    background: var(--card);
+    border-radius: 10px;
+    padding: 14px 14px 12px;
+  }
+  .health-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 10px;
+  }
+  .health-name {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--dark);
+  }
+  .badge {
+    font-size: 9px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+  .badge-ok   { background: var(--green-lt); color: var(--green-dk); }
+  .badge-warn { background: var(--amber-lt); color: var(--amber-dk); }
+  .badge-low  { background: var(--red-lt);   color: var(--red-dk); }
+
+  .health-value {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--dark);
+    letter-spacing: -0.02em;
+    margin-bottom: 10px;
+  }
+  .bar-track {
+    height: 5px;
+    background: var(--rule);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 6px;
+  }
+  .bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.6s ease;
+  }
+  .bar-green { background: var(--green); }
+  .bar-amber { background: var(--amber); }
+  .bar-red   { background: var(--red); }
+  .health-target {
+    font-size: 10px;
+    color: var(--light);
+  }
+
+  /* ── Footer ── */
+  .footer {
+    margin-top: 20px;
+    padding-top: 14px;
+    border-top: 0.5px solid var(--rule);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 10px;
+    color: var(--light);
+  }
+  .refresh-btn {
+    background: var(--dark);
+    color: #fff;
+    border: none;
+    font-size: 10px;
+    padding: 5px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: 500;
+    transition: opacity 0.15s;
+  }
+  .refresh-btn:hover { opacity: 0.8; }
+
+  /* ── Setup notice ── */
+  .setup-notice {
+    background: var(--accent-lt);
+    border: 1px solid var(--accent);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    font-size: 12px;
+    color: var(--dark);
+    line-height: 1.6;
+  }
+  .setup-notice strong { color: var(--accent); }
+  .setup-notice code {
+    background: rgba(127,119,221,0.15);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 11px;
+    word-break: break-all;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <h1>Queen Takes Book</h1>
+      <p>Owner Dashboard</p>
+    </div>
+    <div class="header-right">
+      <div class="period-badge" id="period-badge">Loading...</div>
+      <div class="last-updated" id="last-updated"></div>
+    </div>
+  </div>
+
+  <!-- Setup notice (shown until sheet URL is configured) -->
+  <div class="setup-notice" id="setup-notice">
+    <strong>One-time setup:</strong> Paste your Google Sheets CSV URL into the <code>SHEET_URL</code> variable at the top of this file's &lt;script&gt; section. See the setup guide for instructions. Until then, the dashboard displays sample data.
+  </div>
+
+  <!-- Status bar -->
+  <div class="status-bar" id="status-bar">
+    <div class="spinner"></div>
+    <span id="status-text">Loading data from Google Sheets...</span>
+  </div>
+
+  <!-- ── Performance ── -->
+  <div class="section-label">Performance</div>
+  <div class="metric-grid">
+    <div class="metric-card">
+      <div class="metric-label">Monthly Revenue</div>
+      <div class="metric-value" id="monthly-revenue">—</div>
+      <div class="metric-sub" id="monthly-revenue-trend"></div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Transactions</div>
+      <div class="metric-value" id="transactions">—</div>
+      <div class="metric-sub" id="transactions-trend"></div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Avg Order Value</div>
+      <div class="metric-value" id="avg-order">—</div>
+      <div class="metric-sub" id="avg-order-trend"></div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Return Customer Rate</div>
+      <div class="metric-value" id="return-rate">—</div>
+      <div class="metric-sub" id="return-rate-trend"></div>
+    </div>
+  </div>
+
+  <!-- Charts -->
+  <div class="chart-row" style="margin-top:10px;">
+    <div class="chart-card">
+      <div class="chart-title">Revenue — Trailing 6 Months</div>
+      <div style="position:relative; height:130px;"><canvas id="revChart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">New vs Returning Customers</div>
+      <div class="donut-wrap">
+        <div class="donut-canvas-wrap"><canvas id="custChart"></canvas></div>
+        <div class="donut-legend">
+          <span><span class="legend-dot" style="background:var(--accent)"></span>Returning</span>
+          <span><span class="legend-dot" style="background:#D3D1C7"></span>New</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Cost Efficiency ── -->
+  <div class="section-label">Cost Efficiency</div>
+  <div class="metric-grid">
+    <div class="metric-card">
+      <div class="metric-label">Gross Margin</div>
+      <div class="metric-value" id="gross-margin">—</div>
+      <div class="metric-sub" id="gross-margin-note"></div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Labor % of Revenue</div>
+      <div class="metric-value" id="labor-pct">—</div>
+      <div class="metric-sub" id="labor-pct-trend"></div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Net Margin</div>
+      <div class="metric-value" id="net-margin">—</div>
+      <div class="metric-sub" id="net-margin-trend"></div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Break-even Threshold</div>
+      <div class="metric-value" id="breakeven">—</div>
+      <div class="metric-sub" id="breakeven-gap"></div>
+    </div>
+  </div>
+
+  <!-- ── Financial Health ── -->
+  <div class="section-label">Financial Health</div>
+  <div class="metric-grid-3">
+    <div class="health-card">
+      <div class="health-top">
+        <div class="health-name">Cash Runway</div>
+        <div class="badge" id="cash-badge">—</div>
+      </div>
+      <div class="health-value" id="cash-value">—</div>
+      <div class="bar-track"><div class="bar-fill" id="cash-bar" style="width:0%"></div></div>
+      <div class="health-target" id="cash-target"></div>
+    </div>
+    <div class="health-card">
+      <div class="health-top">
+        <div class="health-name">Inventory Turnover</div>
+        <div class="badge" id="inv-badge">—</div>
+      </div>
+      <div class="health-value" id="inv-value">—</div>
+      <div class="bar-track"><div class="bar-fill" id="inv-bar" style="width:0%"></div></div>
+      <div class="health-target" id="inv-target"></div>
+    </div>
+    <div class="health-card">
+      <div class="health-top">
+        <div class="health-name">Purchase Frequency</div>
+        <div class="badge" id="freq-badge">—</div>
+      </div>
+      <div class="health-value" id="freq-value">—</div>
+      <div class="bar-track"><div class="bar-fill" id="freq-bar" style="width:0%"></div></div>
+      <div class="health-target" id="freq-target"></div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <span>Queen Takes Book &nbsp;·&nbsp; Owner Dashboard &nbsp;·&nbsp; <span id="footer-period">—</span></span>
+    <button class="refresh-btn" onclick="loadData()">↻ Refresh</button>
+  </div>
+
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+//  CONFIGURATION — paste your Google Sheets CSV URL here
+//  See setup guide for how to get this URL
+// ══════════════════════════════════════════════════════════════
+const SHEET_URL = "";
+// Example: "https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/export?format=csv&gid=0"
+
+// ══════════════════════════════════════════════════════════════
+//  SAMPLE DATA — used when no sheet URL is configured
+// ══════════════════════════════════════════════════════════════
+const SAMPLE = {
+  period: "March 2026",
+  monthly_revenue: 18240,
+  prev_monthly_revenue: 17500,
+  transactions: 612,
+  prev_transactions: 574,
+  avg_order_value: 29.80,
+  prev_avg_order_value: 31.00,
+  return_customer_rate: 41,
+  prev_return_customer_rate: 38,
+  rev_oct: 14200, rev_nov: 15800, rev_dec: 22100,
+  rev_jan: 13900, rev_feb: 17500, rev_mar: 18240,
+  returning_pct: 41,
+  gross_margin: 43,
+  gross_margin_target: 42,
+  labor_pct: 31,
+  prev_labor_pct: 29,
+  net_margin: 6.1,
+  prev_net_margin: 5.7,
+  breakeven: 14800,
+  cash_weeks: 11,
+  cash_target: 8,
+  inventory_turnover: 3.8,
+  inventory_turnover_target: 4.5,
+  purchase_frequency: 2.4,
+  purchase_frequency_target: 2.5
+};
+
+// ── Helpers ──────────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+const fmt$  = n => '$' + Number(n).toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:0});
+const fmtPct = n => Number(n).toFixed(1) + '%';
+const fmtX   = n => Number(n).toFixed(1) + '×/yr';
+
+function trend(current, previous, formatFn, higherIsBetter = true) {
+  const c = parseFloat(current), p = parseFloat(previous);
+  if (isNaN(c) || isNaN(p) || p === 0) return '';
+  const diff = c - p;
+  const pct  = ((diff / Math.abs(p)) * 100).toFixed(1);
+  const up   = diff > 0;
+  const good = higherIsBetter ? up : !up;
+  const cls  = diff === 0 ? 'flat' : (good ? 'up' : 'down');
+  const arrow = diff === 0 ? '—' : (up ? '▲' : '▼');
+  const label = formatFn
+    ? `${arrow} ${formatFn(Math.abs(diff))} vs last month`
+    : `${arrow} ${Math.abs(pct)}% vs last month`;
+  return `<span class="${cls}">${label}</span>`;
+}
+
+function healthBadge(value, target, higherIsBetter = true) {
+  const ratio = higherIsBetter ? value / target : target / value;
+  if (ratio >= 0.95) return { cls: 'badge-ok',   label: 'Healthy',  bar: 'bar-green' };
+  if (ratio >= 0.75) return { cls: 'badge-warn',  label: 'Watch',    bar: 'bar-amber' };
+  return                    { cls: 'badge-low',   label: 'Off track', bar: 'bar-red' };
+}
+
+// ── Chart instances ──────────────────────────────────────────
+let revChartInst = null;
+let custChartInst = null;
+
+function renderCharts(d) {
+  const revCanvas = $('revChart');
+  const custCanvas = $('custChart');
+  if (revChartInst)  revChartInst.destroy();
+  if (custChartInst) custChartInst.destroy();
+
+  revChartInst = new Chart(revCanvas, {
+    type: 'bar',
+    data: {
+      labels: ['Oct','Nov','Dec','Jan','Feb','Mar'],
+      datasets: [{
+        data: [d.rev_oct, d.rev_nov, d.rev_dec, d.rev_jan, d.rev_feb, d.rev_mar],
+        backgroundColor: ['#CECBF6','#CECBF6','#CECBF6','#CECBF6','#CECBF6','#7F77DD'],
+        borderRadius: 4,
+        borderSkipped: false
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false }, ticks: { color: '#AAAAAA', font: { size: 10 } } },
+        y: {
+          grid: { color: 'rgba(0,0,0,0.05)' },
+          ticks: {
+            color: '#AAAAAA', font: { size: 10 },
+            callback: v => '$' + (v/1000).toFixed(0) + 'k'
+          }
+        }
+      }
+    }
+  });
+
+  const ret = parseFloat(d.returning_pct) || 41;
+  custChartInst = new Chart(custCanvas, {
+    type: 'doughnut',
+    data: {
+      labels: [`Returning (${ret}%)`, `New (${100 - ret}%)`],
+      datasets: [{
+        data: [ret, 100 - ret],
+        backgroundColor: ['#7F77DD', '#D3D1C7'],
+        borderWidth: 0,
+        hoverOffset: 4
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      cutout: '70%',
+      plugins: { legend: { display: false } }
+    }
+  });
+}
+
+// ── Render ───────────────────────────────────────────────────
+function render(d) {
+  $('period-badge').textContent = d.period || '—';
+  $('footer-period').textContent = d.period || '—';
+  $('last-updated').textContent = 'Updated ' + new Date().toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'});
+
+  // Performance
+  $('monthly-revenue').textContent = fmt$(d.monthly_revenue);
+  $('monthly-revenue-trend').innerHTML = trend(d.monthly_revenue, d.prev_monthly_revenue, null);
+  $('transactions').textContent = Number(d.transactions).toLocaleString();
+  $('transactions-trend').innerHTML = trend(d.transactions, d.prev_transactions, v => '+' + Math.round(v));
+  $('avg-order').textContent = '$' + parseFloat(d.avg_order_value).toFixed(2);
+  $('avg-order-trend').innerHTML = trend(d.avg_order_value, d.prev_avg_order_value, v => '$' + v.toFixed(2));
+  $('return-rate').textContent = Math.round(d.return_customer_rate) + '%';
+  $('return-rate-trend').innerHTML = trend(d.return_customer_rate, d.prev_return_customer_rate, v => '+' + Math.round(v) + 'pts');
+
+  // Cost efficiency
+  $('gross-margin').textContent = Math.round(d.gross_margin) + '%';
+  const gmOk = parseFloat(d.gross_margin) >= parseFloat(d.gross_margin_target);
+  $('gross-margin-note').innerHTML = `<span class="${gmOk ? 'up' : 'down'}">Target ≥${d.gross_margin_target}%</span>`;
+  $('labor-pct').textContent = Math.round(d.labor_pct) + '%';
+  $('labor-pct-trend').innerHTML = trend(d.labor_pct, d.prev_labor_pct, v => '+' + Math.round(v) + 'pts', false);
+  $('net-margin').textContent = parseFloat(d.net_margin).toFixed(1) + '%';
+  $('net-margin-trend').innerHTML = trend(d.net_margin, d.prev_net_margin, v => '+' + v.toFixed(1) + 'pts');
+  $('breakeven').textContent = fmt$(d.breakeven);
+  const gap = parseFloat(d.monthly_revenue) - parseFloat(d.breakeven);
+  $('breakeven-gap').innerHTML = gap >= 0
+    ? `<span class="up">${fmt$(gap)} above floor</span>`
+    : `<span class="down">${fmt$(Math.abs(gap))} below floor</span>`;
+
+  // Financial health
+  function setHealth(valueEl, barEl, badgeEl, targetEl, value, target, displayVal, targetLabel, higherIsBetter) {
+    const { cls, label, bar } = healthBadge(parseFloat(value), parseFloat(target), higherIsBetter);
+    $(valueEl).textContent = displayVal;
+    $(badgeEl).textContent = label;
+    $(badgeEl).className = 'badge ' + cls;
+    const pct = Math.min(100, Math.round((parseFloat(value) / (parseFloat(target) * 1.33)) * 100));
+    $(barEl).style.width = pct + '%';
+    $(barEl).className = 'bar-fill ' + bar;
+    $(targetEl).textContent = targetLabel;
+  }
+
+  setHealth('cash-value','cash-bar','cash-badge','cash-target',
+    d.cash_weeks, d.cash_target,
+    Math.round(d.cash_weeks) + ' weeks',
+    'Target ≥' + d.cash_target + ' weeks', true);
+
+  setHealth('inv-value','inv-bar','inv-badge','inv-target',
+    d.inventory_turnover, d.inventory_turnover_target,
+    parseFloat(d.inventory_turnover).toFixed(1) + '× / yr',
+    'Target ≥' + d.inventory_turnover_target + '×/yr', true);
+
+  setHealth('freq-value','freq-bar','freq-badge','freq-target',
+    d.purchase_frequency, d.purchase_frequency_target,
+    parseFloat(d.purchase_frequency).toFixed(1) + '× / yr',
+    'Target ≥' + d.purchase_frequency_target + '×/yr', true);
+
+  renderCharts(d);
+}
+
+// ── CSV parser ───────────────────────────────────────────────
+function parseCSV(text) {
+  const data = {};
+  const lines = text.trim().split('\n');
+  for (const line of lines) {
+    const parts = line.split(',');
+    if (parts.length >= 2) {
+      const key = parts[0].trim().toLowerCase().replace(/\s+/g, '_');
+      const val = parts[1].trim().replace(/^"|"$/g, '');
+      data[key] = isNaN(val) ? val : parseFloat(val);
+    }
+  }
+  return data;
+}
+
+// ── Load ─────────────────────────────────────────────────────
+async function loadData() {
+  if (!SHEET_URL) {
+    $('setup-notice').style.display = 'block';
+    render(SAMPLE);
+    return;
+  }
+
+  $('setup-notice').style.display = 'none';
+  const bar = $('status-bar');
+  bar.className = 'status-bar visible';
+  $('status-text').textContent = 'Loading data from Google Sheets...';
+
+  try {
+    const res = await fetch(SHEET_URL);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const text = await res.text();
+    const data = parseCSV(text);
+    bar.className = 'status-bar';
+    render(data);
+  } catch (err) {
+    bar.className = 'status-bar visible error';
+    $('status-text').textContent = 'Could not load sheet data. Check the URL or network. Showing sample data.';
+    const spinner = bar.querySelector('.spinner');
+    if (spinner) spinner.style.display = 'none';
+    render(SAMPLE);
+  }
+}
+
+loadData();
+</script>
+</body>
+</html>
