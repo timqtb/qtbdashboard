@@ -6,303 +6,161 @@
 <title>Queen Takes Book — Owner Dashboard</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
-  /* ── Reset & Base ── */
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
   :root {
-    --dark:       #2C2C2C;
-    --mid:        #666666;
-    --light:      #AAAAAA;
-    --rule:       #E0DDD6;
-    --card:       #F7F6F3;
-    --white:      #FFFFFF;
-    --accent:     #7F77DD;
-    --accent-lt:  #EEEDFE;
-    --green:      #1D9E75;
-    --green-lt:   #E1F5EE;
-    --green-dk:   #0F6E56;
-    --amber:      #EF9F27;
-    --amber-lt:   #FAEEDA;
-    --amber-dk:   #854F0B;
-    --red:        #E24B4A;
-    --red-lt:     #FCEBEB;
-    --red-dk:     #A32D2D;
-    --page:       #EDEBE6;
+    --dark:      #2C2C2C;
+    --mid:       #666666;
+    --light:     #AAAAAA;
+    --rule:      #E0DDD6;
+    --card:      #F7F6F3;
+    --white:     #FFFFFF;
+    --accent:    #7F77DD;
+    --accent-lt: #EEEDFE;
+    --green:     #1D9E75;
+    --green-lt:  #E1F5EE;
+    --green-dk:  #0F6E56;
+    --amber:     #EF9F27;
+    --amber-lt:  #FAEEDA;
+    --amber-dk:  #854F0B;
+    --red:       #E24B4A;
+    --red-lt:    #FCEBEB;
+    --red-dk:    #A32D2D;
+    --page:      #EDEBE6;
   }
-
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-    background: var(--page);
-    color: var(--dark);
-    min-height: 100vh;
-    padding: 24px 20px;
-  }
-
-  /* ── Layout ── */
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; background: var(--page); color: var(--dark); min-height: 100vh; padding: 24px 20px; }
   .page { max-width: 900px; margin: 0 auto; }
 
-  /* ── Header ── */
-  .header {
-    background: var(--dark);
-    border-radius: 12px;
-    padding: 18px 24px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-  }
+  /* Header */
+  .header { background: var(--dark); border-radius: 12px; padding: 18px 24px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
   .header-left h1 { color: #fff; font-size: 17px; font-weight: 600; letter-spacing: -0.01em; }
   .header-left p  { color: var(--light); font-size: 12px; margin-top: 2px; }
-  .header-right   { text-align: right; }
-  .period-badge {
-    background: rgba(255,255,255,0.1);
-    color: #ccc;
-    font-size: 11px;
-    padding: 4px 12px;
-    border-radius: 20px;
-    display: inline-block;
-  }
-  .last-updated { color: var(--light); font-size: 10px; margin-top: 4px; }
+  .period-badge { background: rgba(255,255,255,0.1); color: #ccc; font-size: 11px; padding: 4px 12px; border-radius: 20px; display: inline-block; }
+  .last-updated { color: var(--light); font-size: 10px; margin-top: 4px; text-align: right; }
 
-  /* ── Loading / Error ── */
-  .status-bar {
-    background: var(--accent-lt);
-    color: var(--accent);
-    font-size: 12px;
-    padding: 8px 16px;
-    border-radius: 8px;
-    margin-bottom: 16px;
-    display: none;
-    align-items: center;
-    gap: 8px;
-  }
+  /* Status */
+  .status-bar { background: var(--accent-lt); color: var(--accent); font-size: 12px; padding: 8px 16px; border-radius: 8px; margin-bottom: 16px; display: none; align-items: center; gap: 8px; }
   .status-bar.visible { display: flex; }
-  .status-bar.error   { background: var(--red-lt); color: var(--red-dk); }
-  .spinner {
-    width: 12px; height: 12px;
-    border: 2px solid currentColor;
-    border-top-color: transparent;
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
-    flex-shrink: 0;
-  }
+  .status-bar.error { background: var(--red-lt); color: var(--red-dk); }
+  .spinner { width: 12px; height: 12px; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* ── Section headers ── */
-  .section-label {
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--light);
-    margin: 20px 0 8px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .section-label::after {
-    content: '';
-    flex: 1;
-    height: 0.5px;
-    background: var(--rule);
-  }
+  /* Section labels */
+  .section-label { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--light); margin: 20px 0 8px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 0.5px; background: var(--rule); }
 
-  /* ── Metric cards grid ── */
-  .metric-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 8px;
+  /* ── Hero Revenue Card ── */
+  .revenue-hero {
+    background: var(--card);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 8px;
   }
-  .metric-grid-3 {
+  .revenue-hero-top {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0;
+    margin-bottom: 20px;
   }
   @media (max-width: 600px) {
-    .metric-grid, .metric-grid-3 { grid-template-columns: repeat(2, 1fr); }
+    .revenue-hero-top { grid-template-columns: 1fr; gap: 16px; }
+  }
+  .revenue-hero-divider {
+    width: 0.5px;
+    background: var(--rule);
+    margin: 0 24px;
+  }
+  @media (max-width: 600px) { .revenue-hero-divider { display: none; } }
+
+  .rhero-section { padding: 0 24px; }
+  .rhero-section:first-child { padding-left: 0; }
+  .rhero-section:last-child { padding-right: 0; border-left: 0.5px solid var(--rule); }
+  .rhero-section:nth-child(2) { border-left: 0.5px solid var(--rule); }
+  @media (max-width: 600px) {
+    .rhero-section, .rhero-section:first-child, .rhero-section:last-child,
+    .rhero-section:nth-child(2) { padding: 0; border: none; }
   }
 
-  .metric-card {
-    background: var(--card);
-    border-radius: 10px;
-    padding: 14px 14px 10px;
+  .rhero-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--mid); margin-bottom: 6px; }
+  .rhero-value { font-size: 32px; font-weight: 700; color: var(--dark); letter-spacing: -0.03em; line-height: 1; margin-bottom: 4px; }
+  .rhero-sub   { font-size: 11px; font-weight: 500; }
+
+  /* PAR bar */
+  .par-section { border-top: 0.5px solid var(--rule); padding-top: 16px; }
+  .par-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+  .par-title { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--mid); }
+  .par-status { font-size: 11px; font-weight: 600; }
+  .par-track-wrap { position: relative; height: 8px; background: var(--rule); border-radius: 4px; overflow: visible; margin-bottom: 6px; }
+  .par-fill { height: 100%; border-radius: 4px; transition: width 0.6s ease; position: relative; }
+  /* PAR marker line */
+  .par-marker {
+    position: absolute;
+    top: -4px;
+    width: 2px;
+    height: 16px;
+    background: var(--dark);
+    border-radius: 1px;
+    transform: translateX(-50%);
   }
-  .metric-label {
-    font-size: 10px;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+  .par-marker-label {
+    position: absolute;
+    top: 16px;
+    transform: translateX(-50%);
+    font-size: 9px;
     color: var(--mid);
-    margin-bottom: 6px;
+    white-space: nowrap;
   }
-  .metric-value {
-    font-size: 24px;
-    font-weight: 600;
-    color: var(--dark);
-    letter-spacing: -0.02em;
-    line-height: 1;
+  .par-footer { display: flex; justify-content: space-between; font-size: 10px; color: var(--light); margin-top: 18px; }
+
+  /* Metric grids */
+  .metric-grid   { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .metric-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  @media (max-width: 600px) {
+    .metric-grid { grid-template-columns: repeat(2, 1fr); }
+    .metric-grid-3 { grid-template-columns: 1fr; }
   }
-  .metric-sub {
-    font-size: 10px;
-    margin-top: 6px;
-    font-weight: 500;
-  }
+  .metric-card { background: var(--card); border-radius: 10px; padding: 14px 14px 10px; }
+  .metric-label { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; color: var(--mid); margin-bottom: 6px; }
+  .metric-value { font-size: 24px; font-weight: 600; color: var(--dark); letter-spacing: -0.02em; line-height: 1; }
+  .metric-sub { font-size: 10px; margin-top: 6px; font-weight: 500; }
   .up   { color: var(--green); }
   .down { color: var(--red); }
   .flat { color: var(--light); }
 
-  /* ── Chart row ── */
-  .chart-row {
-    display: grid;
-    grid-template-columns: 1.65fr 1fr;
-    gap: 10px;
-    margin-top: 2px;
-  }
+  /* Charts */
+  .chart-row { display: grid; grid-template-columns: 1.65fr 1fr; gap: 10px; margin-top: 10px; }
   @media (max-width: 600px) { .chart-row { grid-template-columns: 1fr; } }
-
-  .chart-card {
-    background: var(--card);
-    border-radius: 10px;
-    padding: 14px 16px;
-  }
-  .chart-title {
-    font-size: 10px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--mid);
-    margin-bottom: 10px;
-  }
-
-  /* ── Donut wrapper ── */
-  .donut-wrap {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 130px;
-  }
+  .chart-card { background: var(--card); border-radius: 10px; padding: 14px 16px; }
+  .chart-title { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--mid); margin-bottom: 10px; }
+  .donut-wrap { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 130px; }
   .donut-canvas-wrap { position: relative; height: 100px; width: 100px; }
-  .donut-legend {
-    display: flex;
-    gap: 14px;
-    margin-top: 8px;
-    font-size: 10px;
-    color: var(--mid);
-  }
-  .legend-dot {
-    width: 8px; height: 8px;
-    border-radius: 2px;
-    display: inline-block;
-    margin-right: 4px;
-    vertical-align: middle;
-  }
+  .donut-legend { display: flex; gap: 14px; margin-top: 8px; font-size: 10px; color: var(--mid); }
+  .legend-dot { width: 8px; height: 8px; border-radius: 2px; display: inline-block; margin-right: 4px; vertical-align: middle; }
 
-  /* ── Health cards ── */
-  .health-card {
-    background: var(--card);
-    border-radius: 10px;
-    padding: 14px 14px 12px;
-  }
-  .health-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 10px;
-  }
-  .health-name {
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--dark);
-  }
-  .badge {
-    font-size: 9px;
-    font-weight: 600;
-    padding: 3px 8px;
-    border-radius: 20px;
-    white-space: nowrap;
-  }
+  /* Health cards */
+  .health-card { background: var(--card); border-radius: 10px; padding: 14px 14px 12px; }
+  .health-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+  .health-name { font-size: 11px; font-weight: 600; color: var(--dark); }
+  .badge { font-size: 9px; font-weight: 600; padding: 3px 8px; border-radius: 20px; white-space: nowrap; }
   .badge-ok   { background: var(--green-lt); color: var(--green-dk); }
   .badge-warn { background: var(--amber-lt); color: var(--amber-dk); }
   .badge-low  { background: var(--red-lt);   color: var(--red-dk); }
-
-  .health-value {
-    font-size: 20px;
-    font-weight: 600;
-    color: var(--dark);
-    letter-spacing: -0.02em;
-    margin-bottom: 10px;
-  }
-  .bar-track {
-    height: 5px;
-    background: var(--rule);
-    border-radius: 3px;
-    overflow: hidden;
-    margin-bottom: 6px;
-  }
-  .bar-fill {
-    height: 100%;
-    border-radius: 3px;
-    transition: width 0.6s ease;
-  }
+  .health-value { font-size: 20px; font-weight: 600; color: var(--dark); letter-spacing: -0.02em; margin-bottom: 10px; }
+  .bar-track { height: 5px; background: var(--rule); border-radius: 3px; overflow: hidden; margin-bottom: 6px; }
+  .bar-fill  { height: 100%; border-radius: 3px; transition: width 0.6s ease; }
   .bar-green { background: var(--green); }
   .bar-amber { background: var(--amber); }
   .bar-red   { background: var(--red); }
-  .health-target {
-    font-size: 10px;
-    color: var(--light);
-  }
+  .health-target { font-size: 10px; color: var(--light); }
 
-  /* ── Footer ── */
-  .footer {
-    margin-top: 20px;
-    padding-top: 14px;
-    border-top: 0.5px solid var(--rule);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 10px;
-    color: var(--light);
-  }
-  .refresh-btn {
-    background: var(--dark);
-    color: #fff;
-    border: none;
-    font-size: 10px;
-    padding: 5px 14px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-family: inherit;
-    font-weight: 500;
-    transition: opacity 0.15s;
-  }
+  /* Footer */
+  .footer { margin-top: 20px; padding-top: 14px; border-top: 0.5px solid var(--rule); display: flex; justify-content: space-between; align-items: center; font-size: 10px; color: var(--light); }
+  .refresh-btn { background: var(--dark); color: #fff; border: none; font-size: 10px; padding: 5px 14px; border-radius: 6px; cursor: pointer; font-family: inherit; font-weight: 500; transition: opacity 0.15s; }
   .refresh-btn:hover { opacity: 0.8; }
-
-  /* ── Setup notice ── */
-  .setup-notice {
-    background: var(--accent-lt);
-    border: 1px solid var(--accent);
-    border-radius: 10px;
-    padding: 16px 20px;
-    margin-bottom: 20px;
-    font-size: 12px;
-    color: var(--dark);
-    line-height: 1.6;
-  }
-  .setup-notice strong { color: var(--accent); }
-  .setup-notice code {
-    background: rgba(127,119,221,0.15);
-    padding: 1px 6px;
-    border-radius: 4px;
-    font-size: 11px;
-    word-break: break-all;
-  }
 </style>
 </head>
 <body>
 <div class="page">
 
-  <!-- Header -->
   <div class="header">
     <div class="header-left">
       <h1>Queen Takes Book</h1>
@@ -314,44 +172,65 @@
     </div>
   </div>
 
-  <!-- Setup notice (shown until sheet URL is configured) -->
-  <div class="setup-notice" id="setup-notice">
-    <strong>One-time setup:</strong> Paste your Google Sheets CSV URL into the <code>SHEET_URL</code> variable at the top of this file's &lt;script&gt; section. See the setup guide for instructions. Until then, the dashboard displays sample data.
-  </div>
-
-  <!-- Status bar -->
   <div class="status-bar" id="status-bar">
     <div class="spinner"></div>
-    <span id="status-text">Loading data from Google Sheets...</span>
+    <span id="status-text">Loading data...</span>
+  </div>
+
+  <!-- ── Hero Revenue ── -->
+  <div class="section-label">Revenue</div>
+  <div class="revenue-hero">
+
+    <div class="revenue-hero-top">
+      <!-- MTD -->
+      <div class="rhero-section">
+        <div class="rhero-label">Month to date</div>
+        <div class="rhero-value" id="mtd-revenue">—</div>
+        <div class="rhero-sub" id="mtd-projected"></div>
+      </div>
+      <!-- Monthly target -->
+      <div class="rhero-section">
+        <div class="rhero-label">Monthly target</div>
+        <div class="rhero-value" id="monthly-target">—</div>
+        <div class="rhero-sub" id="target-remaining"></div>
+      </div>
+      <!-- YoY -->
+      <div class="rhero-section">
+        <div class="rhero-label">Same month last year</div>
+        <div class="rhero-value" id="yoy-value">—</div>
+        <div class="rhero-sub" id="yoy-trend"></div>
+      </div>
+    </div>
+
+    <!-- PAR tracker -->
+    <div class="par-section">
+      <div class="par-header">
+        <span class="par-title">Pace to target</span>
+        <span class="par-status" id="par-status"></span>
+      </div>
+      <div class="par-track-wrap" id="par-track-wrap">
+        <div class="par-fill" id="par-fill"></div>
+        <div class="par-marker" id="par-marker"></div>
+        <div class="par-marker-label" id="par-marker-label"></div>
+      </div>
+      <div class="par-footer">
+        <span id="par-days"></span>
+        <span id="par-projected-label"></span>
+      </div>
+    </div>
+
   </div>
 
   <!-- ── Performance ── -->
   <div class="section-label">Performance</div>
   <div class="metric-grid">
-    <div class="metric-card">
-      <div class="metric-label">Monthly Revenue</div>
-      <div class="metric-value" id="monthly-revenue">—</div>
-      <div class="metric-sub" id="monthly-revenue-trend"></div>
-    </div>
-    <div class="metric-card">
-      <div class="metric-label">Transactions</div>
-      <div class="metric-value" id="transactions">—</div>
-      <div class="metric-sub" id="transactions-trend"></div>
-    </div>
-    <div class="metric-card">
-      <div class="metric-label">Avg Order Value</div>
-      <div class="metric-value" id="avg-order">—</div>
-      <div class="metric-sub" id="avg-order-trend"></div>
-    </div>
-    <div class="metric-card">
-      <div class="metric-label">Return Customer Rate</div>
-      <div class="metric-value" id="return-rate">—</div>
-      <div class="metric-sub" id="return-rate-trend"></div>
-    </div>
+    <div class="metric-card"><div class="metric-label">Transactions</div><div class="metric-value" id="transactions">—</div><div class="metric-sub" id="transactions-trend"></div></div>
+    <div class="metric-card"><div class="metric-label">Avg Order Value</div><div class="metric-value" id="avg-order">—</div><div class="metric-sub" id="avg-order-trend"></div></div>
+    <div class="metric-card"><div class="metric-label">Return Customer Rate</div><div class="metric-value" id="return-rate">—</div><div class="metric-sub" id="return-rate-trend"></div></div>
+    <div class="metric-card"><div class="metric-label">Revenue vs Last Year</div><div class="metric-value" id="yoy-pct">—</div><div class="metric-sub" id="yoy-pct-sub"></div></div>
   </div>
 
-  <!-- Charts -->
-  <div class="chart-row" style="margin-top:10px;">
+  <div class="chart-row">
     <div class="chart-card">
       <div class="chart-title">Revenue — Trailing 6 Months</div>
       <div style="position:relative; height:130px;"><canvas id="revChart"></canvas></div>
@@ -371,292 +250,276 @@
   <!-- ── Cost Efficiency ── -->
   <div class="section-label">Cost Efficiency</div>
   <div class="metric-grid">
-    <div class="metric-card">
-      <div class="metric-label">Gross Margin</div>
-      <div class="metric-value" id="gross-margin">—</div>
-      <div class="metric-sub" id="gross-margin-note"></div>
-    </div>
-    <div class="metric-card">
-      <div class="metric-label">Labor % of Revenue</div>
-      <div class="metric-value" id="labor-pct">—</div>
-      <div class="metric-sub" id="labor-pct-trend"></div>
-    </div>
-    <div class="metric-card">
-      <div class="metric-label">Net Margin</div>
-      <div class="metric-value" id="net-margin">—</div>
-      <div class="metric-sub" id="net-margin-trend"></div>
-    </div>
-    <div class="metric-card">
-      <div class="metric-label">Break-even Threshold</div>
-      <div class="metric-value" id="breakeven">—</div>
-      <div class="metric-sub" id="breakeven-gap"></div>
-    </div>
+    <div class="metric-card"><div class="metric-label">Gross Margin</div><div class="metric-value" id="gross-margin">—</div><div class="metric-sub" id="gross-margin-note"></div></div>
+    <div class="metric-card"><div class="metric-label">Labor % of Revenue</div><div class="metric-value" id="labor-pct">—</div><div class="metric-sub" id="labor-pct-trend"></div></div>
+    <div class="metric-card"><div class="metric-label">Net Margin</div><div class="metric-value" id="net-margin">—</div><div class="metric-sub" id="net-margin-trend"></div></div>
+    <div class="metric-card"><div class="metric-label">Break-even Threshold</div><div class="metric-value" id="breakeven">—</div><div class="metric-sub" id="breakeven-gap"></div></div>
   </div>
 
   <!-- ── Financial Health ── -->
   <div class="section-label">Financial Health</div>
   <div class="metric-grid-3">
-    <div class="health-card">
-      <div class="health-top">
-        <div class="health-name">Cash Runway</div>
-        <div class="badge" id="cash-badge">—</div>
-      </div>
-      <div class="health-value" id="cash-value">—</div>
-      <div class="bar-track"><div class="bar-fill" id="cash-bar" style="width:0%"></div></div>
-      <div class="health-target" id="cash-target"></div>
-    </div>
-    <div class="health-card">
-      <div class="health-top">
-        <div class="health-name">Inventory Turnover</div>
-        <div class="badge" id="inv-badge">—</div>
-      </div>
-      <div class="health-value" id="inv-value">—</div>
-      <div class="bar-track"><div class="bar-fill" id="inv-bar" style="width:0%"></div></div>
-      <div class="health-target" id="inv-target"></div>
-    </div>
-    <div class="health-card">
-      <div class="health-top">
-        <div class="health-name">Purchase Frequency</div>
-        <div class="badge" id="freq-badge">—</div>
-      </div>
-      <div class="health-value" id="freq-value">—</div>
-      <div class="bar-track"><div class="bar-fill" id="freq-bar" style="width:0%"></div></div>
-      <div class="health-target" id="freq-target"></div>
-    </div>
+    <div class="health-card"><div class="health-top"><div class="health-name">Cash Runway</div><div class="badge" id="cash-badge">—</div></div><div class="health-value" id="cash-value">—</div><div class="bar-track"><div class="bar-fill" id="cash-bar" style="width:0%"></div></div><div class="health-target" id="cash-target"></div></div>
+    <div class="health-card"><div class="health-top"><div class="health-name">Inventory Turnover</div><div class="badge" id="inv-badge">—</div></div><div class="health-value" id="inv-value">—</div><div class="bar-track"><div class="bar-fill" id="inv-bar" style="width:0%"></div></div><div class="health-target" id="inv-target"></div></div>
+    <div class="health-card"><div class="health-top"><div class="health-name">Purchase Frequency</div><div class="badge" id="freq-badge">—</div></div><div class="health-value" id="freq-value">—</div><div class="bar-track"><div class="bar-fill" id="freq-bar" style="width:0%"></div></div><div class="health-target" id="freq-target"></div></div>
   </div>
 
-  <!-- Footer -->
   <div class="footer">
     <span>Queen Takes Book &nbsp;·&nbsp; Owner Dashboard &nbsp;·&nbsp; <span id="footer-period">—</span></span>
     <button class="refresh-btn" onclick="loadData()">↻ Refresh</button>
   </div>
 
 </div>
-
 <script>
-// ══════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
 //  CONFIGURATION — paste your Google Sheets CSV URL here
-//  See setup guide for how to get this URL
-// ══════════════════════════════════════════════════════════════
-const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSKcLJaMOFipnwTomQgF7a9BmYx8OnAyPur3fgNzKdqWAu3k3aTeE6SmiwyLYGqROcqZdr_VW-KofE-/pub?gid=575767265&single=true&output=csv";
-// Example: "https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/export?format=csv&gid=0"
+// ══════════════════════════════════════════════════════════
+const SHEET_URL = "https://docs.google.com/spreadsheets/d/1Q_R1ioStL7wxM7lksDDrNDvqdwnXhD9ZBw-SAd5PPYQ/edit?gid=575767265#gid=575767265";
 
-// ══════════════════════════════════════════════════════════════
-//  SAMPLE DATA — used when no sheet URL is configured
-// ══════════════════════════════════════════════════════════════
+// ── Sample data ───────────────────────────────────────────
 const SAMPLE = {
-  period: "March 2026",
-  monthly_revenue: 18240,
-  prev_monthly_revenue: 17500,
-  transactions: 612,
+  period: "April 2026",
+  // Revenue hero
+  mtd_revenue: 14200,
+  monthly_target: 26000,
+  same_month_last_year: 21500,
+  days_elapsed: 16,
+  days_in_month: 30,
+  // Performance
+  transactions: 421,
   prev_transactions: 574,
-  avg_order_value: 29.80,
-  prev_avg_order_value: 31.00,
+  avg_order_value: 33.73,
+  prev_avg_order_value: 29.80,
   return_customer_rate: 41,
   prev_return_customer_rate: 38,
-  rev_oct: 14200, rev_nov: 15800, rev_dec: 22100,
-  rev_jan: 13900, rev_feb: 17500, rev_mar: 18240,
+  // Revenue history (trailing 6 — update labels via rev_label keys)
+  rev_1: 15800, rev_1_label: 'Nov',
+  rev_2: 22100, rev_2_label: 'Dec',
+  rev_3: 13900, rev_3_label: 'Jan',
+  rev_4: 17500, rev_4_label: 'Feb',
+  rev_5: 25000, rev_5_label: 'Mar',
+  rev_6: 14200, rev_6_label: 'Apr',
   returning_pct: 41,
-  gross_margin: 43,
-  gross_margin_target: 42,
-  labor_pct: 31,
-  prev_labor_pct: 29,
-  net_margin: 6.1,
-  prev_net_margin: 5.7,
+  // Cost efficiency
+  gross_margin: 43, gross_margin_target: 42,
+  labor_pct: 31, prev_labor_pct: 29,
+  net_margin: 6.1, prev_net_margin: 5.7,
   breakeven: 14800,
-  cash_weeks: 11,
-  cash_target: 8,
-  inventory_turnover: 3.8,
-  inventory_turnover_target: 4.5,
-  purchase_frequency: 2.4,
-  purchase_frequency_target: 2.5
+  // Financial health
+  cash_weeks: 11, cash_target: 8,
+  inventory_turnover: 3.8, inventory_turnover_target: 4.5,
+  purchase_frequency: 2.4, purchase_frequency_target: 2.5
 };
 
-// ── Helpers ──────────────────────────────────────────────────
+// ── Helpers ───────────────────────────────────────────────
 const $ = id => document.getElementById(id);
-const fmt$  = n => '$' + Number(n).toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:0});
-const fmtPct = n => Number(n).toFixed(1) + '%';
-const fmtX   = n => Number(n).toFixed(1) + '×/yr';
+const fmt$ = n => '$' + Number(n).toLocaleString('en-US', {maximumFractionDigits:0});
 
-function trend(current, previous, formatFn, higherIsBetter = true) {
-  const c = parseFloat(current), p = parseFloat(previous);
-  if (isNaN(c) || isNaN(p) || p === 0) return '';
-  const diff = c - p;
-  const pct  = ((diff / Math.abs(p)) * 100).toFixed(1);
-  const up   = diff > 0;
+function trend(cur, prev, fmtFn, higherIsBetter=true) {
+  const c = parseFloat(cur), p = parseFloat(prev);
+  if (isNaN(c)||isNaN(p)||p===0) return '';
+  const diff = c - p, up = diff > 0;
   const good = higherIsBetter ? up : !up;
-  const cls  = diff === 0 ? 'flat' : (good ? 'up' : 'down');
-  const arrow = diff === 0 ? '—' : (up ? '▲' : '▼');
-  const label = formatFn
-    ? `${arrow} ${formatFn(Math.abs(diff))} vs last month`
-    : `${arrow} ${Math.abs(pct)}% vs last month`;
+  const cls  = diff===0 ? 'flat' : (good ? 'up' : 'down');
+  const arrow = diff===0 ? '—' : (up ? '▲' : '▼');
+  const label = fmtFn
+    ? `${arrow} ${fmtFn(Math.abs(diff))} vs last month`
+    : `${arrow} ${Math.abs(((diff/Math.abs(p))*100).toFixed(1))}% vs last month`;
   return `<span class="${cls}">${label}</span>`;
 }
 
-function healthBadge(value, target, higherIsBetter = true) {
-  const ratio = higherIsBetter ? value / target : target / value;
-  if (ratio >= 0.95) return { cls: 'badge-ok',   label: 'Healthy',  bar: 'bar-green' };
-  if (ratio >= 0.75) return { cls: 'badge-warn',  label: 'Watch',    bar: 'bar-amber' };
-  return                    { cls: 'badge-low',   label: 'Off track', bar: 'bar-red' };
+function healthBadge(value, target, higherIsBetter=true) {
+  const ratio = higherIsBetter ? value/target : target/value;
+  if (ratio >= 0.95) return { cls:'badge-ok',   label:'Healthy',   bar:'bar-green' };
+  if (ratio >= 0.75) return { cls:'badge-warn',  label:'Watch',     bar:'bar-amber' };
+  return                    { cls:'badge-low',   label:'Off track', bar:'bar-red' };
 }
 
-// ── Chart instances ──────────────────────────────────────────
-let revChartInst = null;
-let custChartInst = null;
+// ── Revenue hero renderer ─────────────────────────────────
+function renderHero(d) {
+  const mtd      = parseFloat(d.mtd_revenue)          || 0;
+  const target   = parseFloat(d.monthly_target)        || 0;
+  const yoy      = parseFloat(d.same_month_last_year)  || 0;
+  const elapsed  = parseFloat(d.days_elapsed)          || 1;
+  const total    = parseFloat(d.days_in_month)         || 30;
 
+  // MTD
+  $('mtd-revenue').textContent = fmt$(mtd);
+
+  // Projected full month at current pace
+  const projected = Math.round((mtd / elapsed) * total);
+  const projVsTarget = projected - target;
+  const projCls = projVsTarget >= 0 ? 'up' : 'down';
+  $('mtd-projected').innerHTML = `<span class="${projCls}">Projecting ${fmt$(projected)} for month</span>`;
+
+  // Target
+  $('monthly-target').textContent = fmt$(target);
+  const remaining = target - mtd;
+  if (remaining > 0) {
+    $('target-remaining').innerHTML = `<span class="flat">${fmt$(remaining)} still needed</span>`;
+  } else {
+    $('target-remaining').innerHTML = `<span class="up">${fmt$(Math.abs(remaining))} over target</span>`;
+  }
+
+  // YoY
+  $('yoy-value').textContent = fmt$(yoy);
+  if (yoy > 0 && mtd > 0) {
+    // Compare projected full month vs same month last year
+    const yoyDiff = projected - yoy;
+    const yoyPct  = ((yoyDiff / yoy) * 100).toFixed(1);
+    const yoyCls  = yoyDiff >= 0 ? 'up' : 'down';
+    const yoyArrow = yoyDiff >= 0 ? '▲' : '▼';
+    $('yoy-trend').innerHTML = `<span class="${yoyCls}">${yoyArrow} ${Math.abs(yoyPct)}% projected vs last year</span>`;
+  }
+
+  // YoY summary card (4th perf metric)
+  if (yoy > 0 && mtd > 0) {
+    const fullYoyDiff = projected - yoy;
+    const fullYoyPct  = ((fullYoyDiff / yoy) * 100).toFixed(1);
+    const cls = fullYoyDiff >= 0 ? 'up' : 'down';
+    const arrow = fullYoyDiff >= 0 ? '▲' : '▼';
+    $('yoy-pct').innerHTML = `<span class="${cls}">${arrow} ${Math.abs(fullYoyPct)}%</span>`;
+    $('yoy-pct-sub').innerHTML = `<span class="flat">Projected vs same month LY</span>`;
+  }
+
+  // PAR bar
+  // PAR = where MTD should be if revenue were linear through the month
+  const parValue    = (target / total) * elapsed;
+  const mtdPct      = Math.min(100, (mtd / target) * 100);
+  const parPct      = Math.min(100, (parValue / target) * 100);
+  const ahead       = mtd >= parValue;
+
+  $('par-fill').style.width     = mtdPct + '%';
+  $('par-fill').style.background = ahead ? 'var(--green)' : 'var(--amber)';
+  $('par-marker').style.left    = parPct + '%';
+  $('par-marker-label').style.left = parPct + '%';
+  $('par-marker-label').textContent = 'PAR ' + fmt$(parValue);
+
+  const diffVsPar = mtd - parValue;
+  const diffCls   = diffVsPar >= 0 ? 'up' : 'down';
+  const diffArrow = diffVsPar >= 0 ? '▲' : '▼';
+  $('par-status').innerHTML = `<span class="${diffCls}">${diffArrow} ${fmt$(Math.abs(diffVsPar))} ${diffVsPar >= 0 ? 'ahead of' : 'behind'} pace</span>`;
+  $('par-days').textContent = `Day ${Math.round(elapsed)} of ${Math.round(total)}`;
+  $('par-projected-label').innerHTML = `<span>Projected: ${fmt$(projected)}</span>`;
+}
+
+// ── Charts ────────────────────────────────────────────────
+let revChart=null, custChart=null;
 function renderCharts(d) {
-  const revCanvas = $('revChart');
-  const custCanvas = $('custChart');
-  if (revChartInst)  revChartInst.destroy();
-  if (custChartInst) custChartInst.destroy();
+  if (revChart)  revChart.destroy();
+  if (custChart) custChart.destroy();
 
-  revChartInst = new Chart(revCanvas, {
+  const labels  = [1,2,3,4,5,6].map(i => d['rev_'+i+'_label'] || ('M'+i));
+  const revData = [1,2,3,4,5,6].map(i => parseFloat(d['rev_'+i]||0));
+
+  revChart = new Chart($('revChart'), {
     type: 'bar',
     data: {
-      labels: ['Oct','Nov','Dec','Jan','Feb','Mar'],
-      datasets: [{
-        data: [d.rev_oct, d.rev_nov, d.rev_dec, d.rev_jan, d.rev_feb, d.rev_mar],
-        backgroundColor: ['#CECBF6','#CECBF6','#CECBF6','#CECBF6','#CECBF6','#7F77DD'],
-        borderRadius: 4,
-        borderSkipped: false
-      }]
+      labels,
+      datasets: [{ data: revData,
+        backgroundColor: revData.map((_,i) => i===revData.length-1 ? '#7F77DD' : '#CECBF6'),
+        borderRadius: 4, borderSkipped: false }]
     },
     options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        x: { grid: { display: false }, ticks: { color: '#AAAAAA', font: { size: 10 } } },
-        y: {
-          grid: { color: 'rgba(0,0,0,0.05)' },
-          ticks: {
-            color: '#AAAAAA', font: { size: 10 },
-            callback: v => '$' + (v/1000).toFixed(0) + 'k'
-          }
-        }
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false} },
+      scales:{
+        x:{ grid:{display:false}, ticks:{color:'#AAAAAA',font:{size:10}} },
+        y:{ grid:{color:'rgba(0,0,0,0.05)'}, ticks:{color:'#AAAAAA',font:{size:10}, callback:v=>'$'+(v/1000).toFixed(0)+'k'} }
       }
     }
   });
 
-  const ret = parseFloat(d.returning_pct) || 41;
-  custChartInst = new Chart(custCanvas, {
-    type: 'doughnut',
-    data: {
-      labels: [`Returning (${ret}%)`, `New (${100 - ret}%)`],
-      datasets: [{
-        data: [ret, 100 - ret],
-        backgroundColor: ['#7F77DD', '#D3D1C7'],
-        borderWidth: 0,
-        hoverOffset: 4
-      }]
+  const ret = parseFloat(d.returning_pct)||41;
+  custChart = new Chart($('custChart'), {
+    type:'doughnut',
+    data:{
+      labels:[`Returning (${ret}%)`,`New (${100-ret}%)`],
+      datasets:[{ data:[ret,100-ret], backgroundColor:['#7F77DD','#D3D1C7'], borderWidth:0, hoverOffset:4 }]
     },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      cutout: '70%',
-      plugins: { legend: { display: false } }
-    }
+    options:{ responsive:true, maintainAspectRatio:false, cutout:'70%', plugins:{legend:{display:false}} }
   });
 }
 
-// ── Render ───────────────────────────────────────────────────
+// ── Main render ───────────────────────────────────────────
 function render(d) {
-  $('period-badge').textContent = d.period || '—';
-  $('footer-period').textContent = d.period || '—';
-  $('last-updated').textContent = 'Updated ' + new Date().toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'});
+  $('period-badge').textContent  = d.period||'—';
+  $('footer-period').textContent = d.period||'—';
+  $('last-updated').textContent  = 'Updated '+new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
 
-  // Performance
-  $('monthly-revenue').textContent = fmt$(d.monthly_revenue);
-  $('monthly-revenue-trend').innerHTML = trend(d.monthly_revenue, d.prev_monthly_revenue, null);
+  renderHero(d);
+
+  // Performance cards
   $('transactions').textContent = Number(d.transactions).toLocaleString();
-  $('transactions-trend').innerHTML = trend(d.transactions, d.prev_transactions, v => '+' + Math.round(v));
-  $('avg-order').textContent = '$' + parseFloat(d.avg_order_value).toFixed(2);
-  $('avg-order-trend').innerHTML = trend(d.avg_order_value, d.prev_avg_order_value, v => '$' + v.toFixed(2));
-  $('return-rate').textContent = Math.round(d.return_customer_rate) + '%';
-  $('return-rate-trend').innerHTML = trend(d.return_customer_rate, d.prev_return_customer_rate, v => '+' + Math.round(v) + 'pts');
+  $('transactions-trend').innerHTML = trend(d.transactions, d.prev_transactions, v=>'+'+Math.round(v));
+  $('avg-order').textContent = '$'+parseFloat(d.avg_order_value).toFixed(2);
+  $('avg-order-trend').innerHTML = trend(d.avg_order_value, d.prev_avg_order_value, v=>'$'+v.toFixed(2));
+  $('return-rate').textContent = Math.round(d.return_customer_rate)+'%';
+  $('return-rate-trend').innerHTML = trend(d.return_customer_rate, d.prev_return_customer_rate, v=>'+'+Math.round(v)+'pts');
 
   // Cost efficiency
-  $('gross-margin').textContent = Math.round(d.gross_margin) + '%';
+  $('gross-margin').textContent = Math.round(d.gross_margin)+'%';
   const gmOk = parseFloat(d.gross_margin) >= parseFloat(d.gross_margin_target);
-  $('gross-margin-note').innerHTML = `<span class="${gmOk ? 'up' : 'down'}">Target ≥${d.gross_margin_target}%</span>`;
-  $('labor-pct').textContent = Math.round(d.labor_pct) + '%';
-  $('labor-pct-trend').innerHTML = trend(d.labor_pct, d.prev_labor_pct, v => '+' + Math.round(v) + 'pts', false);
-  $('net-margin').textContent = parseFloat(d.net_margin).toFixed(1) + '%';
-  $('net-margin-trend').innerHTML = trend(d.net_margin, d.prev_net_margin, v => '+' + v.toFixed(1) + 'pts');
+  $('gross-margin-note').innerHTML = `<span class="${gmOk?'up':'down'}">Target ≥${d.gross_margin_target}%</span>`;
+  $('labor-pct').textContent = Math.round(d.labor_pct)+'%';
+  $('labor-pct-trend').innerHTML = trend(d.labor_pct, d.prev_labor_pct, v=>'+'+Math.round(v)+'pts', false);
+  $('net-margin').textContent = parseFloat(d.net_margin).toFixed(1)+'%';
+  $('net-margin-trend').innerHTML = trend(d.net_margin, d.prev_net_margin, v=>'+'+v.toFixed(1)+'pts');
   $('breakeven').textContent = fmt$(d.breakeven);
-  const gap = parseFloat(d.monthly_revenue) - parseFloat(d.breakeven);
-  $('breakeven-gap').innerHTML = gap >= 0
+  const gap = parseFloat(d.mtd_revenue) - parseFloat(d.breakeven);
+  $('breakeven-gap').innerHTML = gap>=0
     ? `<span class="up">${fmt$(gap)} above floor</span>`
     : `<span class="down">${fmt$(Math.abs(gap))} below floor</span>`;
 
   // Financial health
-  function setHealth(valueEl, barEl, badgeEl, targetEl, value, target, displayVal, targetLabel, higherIsBetter) {
-    const { cls, label, bar } = healthBadge(parseFloat(value), parseFloat(target), higherIsBetter);
-    $(valueEl).textContent = displayVal;
+  function setHealth(vEl,bEl,badgeEl,tEl,value,target,displayVal,targetLabel,hib=true) {
+    const {cls,label,bar} = healthBadge(parseFloat(value),parseFloat(target),hib);
+    $(vEl).textContent = displayVal;
     $(badgeEl).textContent = label;
-    $(badgeEl).className = 'badge ' + cls;
-    const pct = Math.min(100, Math.round((parseFloat(value) / (parseFloat(target) * 1.33)) * 100));
-    $(barEl).style.width = pct + '%';
-    $(barEl).className = 'bar-fill ' + bar;
-    $(targetEl).textContent = targetLabel;
+    $(badgeEl).className = 'badge '+cls;
+    const pct = Math.min(100, Math.round((parseFloat(value)/(parseFloat(target)*1.33))*100));
+    $(bEl).style.width = pct+'%';
+    $(bEl).className = 'bar-fill '+bar;
+    $(tEl).textContent = targetLabel;
   }
-
-  setHealth('cash-value','cash-bar','cash-badge','cash-target',
-    d.cash_weeks, d.cash_target,
-    Math.round(d.cash_weeks) + ' weeks',
-    'Target ≥' + d.cash_target + ' weeks', true);
-
-  setHealth('inv-value','inv-bar','inv-badge','inv-target',
-    d.inventory_turnover, d.inventory_turnover_target,
-    parseFloat(d.inventory_turnover).toFixed(1) + '× / yr',
-    'Target ≥' + d.inventory_turnover_target + '×/yr', true);
-
-  setHealth('freq-value','freq-bar','freq-badge','freq-target',
-    d.purchase_frequency, d.purchase_frequency_target,
-    parseFloat(d.purchase_frequency).toFixed(1) + '× / yr',
-    'Target ≥' + d.purchase_frequency_target + '×/yr', true);
+  setHealth('cash-value','cash-bar','cash-badge','cash-target', d.cash_weeks,d.cash_target, Math.round(d.cash_weeks)+' weeks','Target ≥'+d.cash_target+' weeks');
+  setHealth('inv-value','inv-bar','inv-badge','inv-target', d.inventory_turnover,d.inventory_turnover_target, parseFloat(d.inventory_turnover).toFixed(1)+'× / yr','Target ≥'+d.inventory_turnover_target+'×/yr');
+  setHealth('freq-value','freq-bar','freq-badge','freq-target', d.purchase_frequency,d.purchase_frequency_target, parseFloat(d.purchase_frequency).toFixed(1)+'× / yr','Target ≥'+d.purchase_frequency_target+'×/yr');
 
   renderCharts(d);
 }
 
-// ── CSV parser ───────────────────────────────────────────────
+// ── CSV parser ────────────────────────────────────────────
 function parseCSV(text) {
   const data = {};
   const lines = text.trim().split('\n');
   for (const line of lines) {
     const parts = line.split(',');
     if (parts.length >= 2) {
-      const key = parts[0].trim().toLowerCase().replace(/\s+/g, '_');
-      const val = parts[1].trim().replace(/^"|"$/g, '');
-      data[key] = isNaN(val) ? val : parseFloat(val);
+      const key = parts[0].trim().toLowerCase().replace(/\s+/g,'_');
+      const val = parts.slice(1).join(',').trim().replace(/^"|"$/g,'');
+      data[key] = isNaN(val)||val==='' ? val : parseFloat(val);
     }
   }
   return data;
 }
 
-// ── Load ─────────────────────────────────────────────────────
+// ── Load ──────────────────────────────────────────────────
 async function loadData() {
-  if (!SHEET_URL) {
-    $('setup-notice').style.display = 'block';
-    render(SAMPLE);
-    return;
-  }
-
-  $('setup-notice').style.display = 'none';
+  if (!SHEET_URL) { render(SAMPLE); return; }
   const bar = $('status-bar');
   bar.className = 'status-bar visible';
-  $('status-text').textContent = 'Loading data from Google Sheets...';
-
+  $('status-text').textContent = 'Loading data...';
   try {
     const res = await fetch(SHEET_URL + '&cachebust=' + Date.now());
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const text = await res.text();
-    const data = parseCSV(text);
+    if (!res.ok) throw new Error('HTTP '+res.status);
+    const data = parseCSV(await res.text());
     bar.className = 'status-bar';
     render(data);
-  } catch (err) {
+  } catch(err) {
     bar.className = 'status-bar visible error';
-    $('status-text').textContent = 'Could not load sheet data. Check the URL or network. Showing sample data.';
-    const spinner = bar.querySelector('.spinner');
-    if (spinner) spinner.style.display = 'none';
+    bar.querySelector('.spinner').style.display = 'none';
+    $('status-text').textContent = 'Could not load sheet data. Showing sample data.';
     render(SAMPLE);
   }
 }
