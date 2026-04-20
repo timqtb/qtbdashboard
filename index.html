@@ -6,160 +6,412 @@
 <title>Queen Takes Book — Owner Dashboard</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap');
+
   :root {
-    --dark:      #2C2C2C;
-    --mid:       #666666;
-    --light:     #AAAAAA;
-    --rule:      #E0DDD6;
-    --card:      #F7F6F3;
-    --white:     #FFFFFF;
-    --accent:    #7F77DD;
-    --accent-lt: #EEEDFE;
-    --green:     #1D9E75;
-    --green-lt:  #E1F5EE;
-    --green-dk:  #0F6E56;
-    --amber:     #EF9F27;
-    --amber-lt:  #FAEEDA;
-    --amber-dk:  #854F0B;
-    --red:       #E24B4A;
-    --red-lt:    #FCEBEB;
-    --red-dk:    #A32D2D;
-    --page:      #EDEBE6;
+    --bg:        #0f0f0f;
+    --surface:   #1a1a1a;
+    --surface2:  #222222;
+    --border:    #2e2e2e;
+    --accent:    #c8a96e;
+    --accent2:   #7eb8a4;
+    --accent3:   #c87e7e;
+    --text:      #f0ece4;
+    --muted:     #888880;
+    --green:     #6db88a;
+    --red:       #c87e7e;
+    --amber:     #c8a96e;
   }
-  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; background: var(--page); color: var(--dark); min-height: 100vh; padding: 24px 20px; }
-  .page { max-width: 900px; margin: 0 auto; }
 
-  /* Header */
-  .header { background: var(--dark); border-radius: 12px; padding: 18px 24px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-  .header-left h1 { color: #fff; font-size: 17px; font-weight: 600; letter-spacing: -0.01em; }
-  .header-left p  { color: var(--light); font-size: 12px; margin-top: 2px; }
-  .period-badge { background: rgba(255,255,255,0.1); color: #ccc; font-size: 11px; padding: 4px 12px; border-radius: 20px; display: inline-block; }
-  .last-updated { color: var(--light); font-size: 10px; margin-top: 4px; text-align: right; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
 
-  /* Status */
-  .status-bar { background: var(--accent-lt); color: var(--accent); font-size: 12px; padding: 8px 16px; border-radius: 8px; margin-bottom: 16px; display: none; align-items: center; gap: 8px; }
-  .status-bar.visible { display: flex; }
-  .status-bar.error { background: var(--red-lt); color: var(--red-dk); }
-  .spinner { width: 12px; height: 12px; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; }
-  @keyframes spin { to { transform: rotate(360deg); } }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    min-height: 100vh;
+    padding: 0 0 40px;
+  }
 
-  /* Section labels */
-  .section-label { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--light); margin: 20px 0 8px; display: flex; align-items: center; gap: 10px; }
-  .section-label::after { content: ''; flex: 1; height: 0.5px; background: var(--rule); }
+  /* ── Header ── */
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 18px 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .header-left h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    font-weight: 400;
+    color: var(--text);
+    letter-spacing: 0.01em;
+  }
+  .header-left p {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+  .header-right {
+    text-align: right;
+  }
+  .month-badge {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-size: 12px;
+    color: var(--accent);
+    font-weight: 500;
+    letter-spacing: 0.04em;
+  }
+  .updated {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 5px;
+  }
 
-  /* ── Hero Revenue Card ── */
+  /* ── Layout ── */
+  .main { padding: 24px 28px; max-width: 1200px; margin: 0 auto; }
+
+  .section-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 28px 0 12px;
+  }
+  .section-label:first-child { margin-top: 0; }
+
+  /* ── Revenue Hero ── */
   .revenue-hero {
-    background: var(--card);
+    background: var(--surface);
+    border: 1px solid var(--border);
     border-radius: 12px;
-    padding: 20px 24px;
-    margin-bottom: 8px;
+    padding: 24px;
+    margin-bottom: 12px;
   }
-  .revenue-hero-top {
+  .revenue-trio {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     gap: 0;
     margin-bottom: 20px;
   }
-  @media (max-width: 600px) {
-    .revenue-hero-top { grid-template-columns: 1fr; gap: 16px; }
+  .revenue-trio > div {
+    padding: 0 20px;
+    border-right: 1px solid var(--border);
   }
-  .revenue-hero-divider {
-    width: 0.5px;
-    background: var(--rule);
-    margin: 0 24px;
+  .revenue-trio > div:first-child { padding-left: 0; }
+  .revenue-trio > div:last-child { border-right: none; }
+  .rev-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
   }
-  @media (max-width: 600px) { .revenue-hero-divider { display: none; } }
-
-  .rhero-section { padding: 0 24px; }
-  .rhero-section:first-child { padding-left: 0; }
-  .rhero-section:last-child { padding-right: 0; border-left: 0.5px solid var(--rule); }
-  .rhero-section:nth-child(2) { border-left: 0.5px solid var(--rule); }
-  @media (max-width: 600px) {
-    .rhero-section, .rhero-section:first-child, .rhero-section:last-child,
-    .rhero-section:nth-child(2) { padding: 0; border: none; }
+  .rev-value {
+    font-family: 'DM Serif Display', serif;
+    font-size: 36px;
+    font-weight: 400;
+    color: var(--text);
+    line-height: 1;
   }
-
-  .rhero-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--mid); margin-bottom: 6px; }
-  .rhero-value { font-size: 32px; font-weight: 700; color: var(--dark); letter-spacing: -0.03em; line-height: 1; margin-bottom: 4px; }
-  .rhero-sub   { font-size: 11px; font-weight: 500; }
+  .rev-sub {
+    font-size: 12px;
+    margin-top: 5px;
+  }
+  .up { color: var(--green); }
+  .down { color: var(--red); }
+  .neutral { color: var(--muted); }
 
   /* PAR bar */
-  .par-section { border-top: 0.5px solid var(--rule); padding-top: 16px; }
-  .par-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
-  .par-title { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--mid); }
-  .par-status { font-size: 11px; font-weight: 600; }
-  .par-track-wrap { position: relative; height: 8px; background: var(--rule); border-radius: 4px; overflow: visible; margin-bottom: 6px; }
-  .par-fill { height: 100%; border-radius: 4px; transition: width 0.6s ease; position: relative; }
-  /* PAR marker line */
+  .par-section { margin-top: 4px; }
+  .par-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .par-title {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .par-status {
+    font-size: 12px;
+    font-weight: 500;
+  }
+  .par-track {
+    position: relative;
+    height: 6px;
+    background: var(--surface2);
+    border-radius: 3px;
+    overflow: visible;
+  }
+  .par-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: var(--accent2);
+    transition: width 0.6s ease;
+  }
   .par-marker {
     position: absolute;
     top: -4px;
     width: 2px;
-    height: 16px;
-    background: var(--dark);
+    height: 14px;
+    background: var(--accent);
     border-radius: 1px;
-    transform: translateX(-50%);
   }
-  .par-marker-label {
-    position: absolute;
-    top: 16px;
-    transform: translateX(-50%);
-    font-size: 9px;
-    color: var(--mid);
-    white-space: nowrap;
+  .par-footer {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 6px;
+    font-size: 11px;
+    color: var(--muted);
   }
-  .par-footer { display: flex; justify-content: space-between; font-size: 10px; color: var(--light); margin-top: 18px; }
 
-  /* Metric grids */
-  .metric-grid   { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-  .metric-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-  @media (max-width: 600px) {
-    .metric-grid { grid-template-columns: repeat(2, 1fr); }
-    .metric-grid-3 { grid-template-columns: 1fr; }
+  /* ── Channel Strip ── */
+  .channel-strip {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    margin-bottom: 12px;
   }
-  .metric-card { background: var(--card); border-radius: 10px; padding: 14px 14px 10px; }
-  .metric-label { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; color: var(--mid); margin-bottom: 6px; }
-  .metric-value { font-size: 24px; font-weight: 600; color: var(--dark); letter-spacing: -0.02em; line-height: 1; }
-  .metric-sub { font-size: 10px; margin-top: 6px; font-weight: 500; }
-  .up   { color: var(--green); }
-  .down { color: var(--red); }
-  .flat { color: var(--light); }
+  .channel-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+  }
+  .channel-name {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+  .channel-value {
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--text);
+  }
+  .channel-pct {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
 
-  /* Charts */
-  .chart-row { display: grid; grid-template-columns: 1.65fr 1fr; gap: 10px; margin-top: 10px; }
-  @media (max-width: 600px) { .chart-row { grid-template-columns: 1fr; } }
-  .chart-card { background: var(--card); border-radius: 10px; padding: 14px 16px; }
-  .chart-title { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--mid); margin-bottom: 10px; }
-  .donut-wrap { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 130px; }
-  .donut-canvas-wrap { position: relative; height: 100px; width: 100px; }
-  .donut-legend { display: flex; gap: 14px; margin-top: 8px; font-size: 10px; color: var(--mid); }
-  .legend-dot { width: 8px; height: 8px; border-radius: 2px; display: inline-block; margin-right: 4px; vertical-align: middle; }
+  /* ── Metric Grid ── */
+  .metric-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .metric-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+  }
+  .metric-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .metric-value {
+    font-size: 28px;
+    font-weight: 500;
+    color: var(--text);
+    line-height: 1;
+  }
+  .metric-sub {
+    font-size: 11px;
+    margin-top: 5px;
+  }
 
-  /* Health cards */
-  .health-card { background: var(--card); border-radius: 10px; padding: 14px 14px 12px; }
-  .health-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
-  .health-name { font-size: 11px; font-weight: 600; color: var(--dark); }
-  .badge { font-size: 9px; font-weight: 600; padding: 3px 8px; border-radius: 20px; white-space: nowrap; }
-  .badge-ok   { background: var(--green-lt); color: var(--green-dk); }
-  .badge-warn { background: var(--amber-lt); color: var(--amber-dk); }
-  .badge-low  { background: var(--red-lt);   color: var(--red-dk); }
-  .health-value { font-size: 20px; font-weight: 600; color: var(--dark); letter-spacing: -0.02em; margin-bottom: 10px; }
-  .bar-track { height: 5px; background: var(--rule); border-radius: 3px; overflow: hidden; margin-bottom: 6px; }
-  .bar-fill  { height: 100%; border-radius: 3px; transition: width 0.6s ease; }
-  .bar-green { background: var(--green); }
-  .bar-amber { background: var(--amber); }
-  .bar-red   { background: var(--red); }
-  .health-target { font-size: 10px; color: var(--light); }
+  /* ── Charts Row ── */
+  .charts-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .chart-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+  }
+  .chart-title {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+  .chart-wrap {
+    position: relative;
+    height: 180px;
+  }
 
-  /* Footer */
-  .footer { margin-top: 20px; padding-top: 14px; border-top: 0.5px solid var(--rule); display: flex; justify-content: space-between; align-items: center; font-size: 10px; color: var(--light); }
-  .refresh-btn { background: var(--dark); color: #fff; border: none; font-size: 10px; padding: 5px 14px; border-radius: 6px; cursor: pointer; font-family: inherit; font-weight: 500; transition: opacity 0.15s; }
-  .refresh-btn:hover { opacity: 0.8; }
+  /* ── Cost Efficiency ── */
+  .cost-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  /* ── Health Cards ── */
+  .health-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  .health-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+  }
+  .health-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .health-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .health-badge {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 10px;
+  }
+  .badge-green  { background: rgba(109,184,138,0.15); color: var(--green); }
+  .badge-amber  { background: rgba(200,169,110,0.15); color: var(--amber); }
+  .badge-red    { background: rgba(200,126,126,0.15); color: var(--red); }
+  .health-value {
+    font-family: 'DM Serif Display', serif;
+    font-size: 32px;
+    font-weight: 400;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+  .health-bar-bg {
+    height: 4px;
+    background: var(--surface2);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 5px;
+  }
+  .health-bar-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.6s ease;
+  }
+  .health-target {
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  /* ── Footer ── */
+  .footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 28px 0;
+    max-width: 1200px;
+    margin: 0 auto;
+    border-top: 1px solid var(--border);
+    margin-top: 8px;
+  }
+  .footer-text { font-size: 11px; color: var(--muted); }
+  .refresh-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 7px 16px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  .refresh-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ── Loading ── */
+  .loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 60vh;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .loading-dot {
+    width: 8px; height: 8px;
+    background: var(--accent);
+    border-radius: 50%;
+    display: inline-block;
+    margin: 0 3px;
+    animation: pulse 1.2s ease-in-out infinite;
+  }
+  .loading-dot:nth-child(2) { animation-delay: 0.2s; }
+  .loading-dot:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes pulse {
+    0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+    40% { transform: scale(1); opacity: 1; }
+  }
+
+  @media (max-width: 700px) {
+    .main { padding: 16px; }
+    .revenue-trio { grid-template-columns: 1fr; gap: 16px; }
+    .revenue-trio > div { border-right: none; padding: 0; border-bottom: 1px solid var(--border); padding-bottom: 16px; }
+    .revenue-trio > div:last-child { border-bottom: none; }
+    .channel-strip { grid-template-columns: repeat(2, 1fr); }
+    .metric-grid, .cost-grid { grid-template-columns: repeat(2, 1fr); }
+    .charts-row { grid-template-columns: 1fr; }
+    .health-grid { grid-template-columns: 1fr; }
+    .rev-value { font-size: 28px; }
+  }
 </style>
 </head>
 <body>
-<div class="page">
+
+<div id="loading" class="loading">
+  <div>
+    <span class="loading-dot"></span>
+    <span class="loading-dot"></span>
+    <span class="loading-dot"></span>
+  </div>
+  <p style="color:var(--muted);font-size:13px;">Loading dashboard…</p>
+</div>
+
+<div id="dashboard" style="display:none;">
 
   <div class="header">
     <div class="header-left">
@@ -167,364 +419,472 @@
       <p>Owner Dashboard</p>
     </div>
     <div class="header-right">
-      <div class="period-badge" id="period-badge">Loading...</div>
-      <div class="last-updated" id="last-updated"></div>
+      <div class="month-badge" id="monthBadge">—</div>
+      <div class="updated" id="updatedTime">—</div>
     </div>
   </div>
 
-  <div class="status-bar" id="status-bar">
-    <div class="spinner"></div>
-    <span id="status-text">Loading data...</span>
-  </div>
+  <div class="main">
 
-  <!-- ── Hero Revenue ── -->
-  <div class="section-label">Revenue</div>
-  <div class="revenue-hero">
+    <!-- REVENUE -->
+    <div class="section-label">Revenue</div>
 
-    <div class="revenue-hero-top">
-      <!-- MTD -->
-      <div class="rhero-section">
-        <div class="rhero-label">Month to date</div>
-        <div class="rhero-value" id="mtd-revenue">—</div>
-        <div class="rhero-sub" id="mtd-projected"></div>
+    <div class="revenue-hero">
+      <div class="revenue-trio">
+        <div>
+          <div class="rev-label">Month to Date</div>
+          <div class="rev-value" id="mtdRevenue">—</div>
+          <div class="rev-sub" id="projectedRev">—</div>
+        </div>
+        <div>
+          <div class="rev-label">Monthly Target</div>
+          <div class="rev-value" id="monthlyTarget">—</div>
+          <div class="rev-sub neutral" id="stillNeeded">—</div>
+        </div>
+        <div>
+          <div class="rev-label">Same Month Last Year</div>
+          <div class="rev-value" id="lastYearRev">—</div>
+          <div class="rev-sub" id="yoyPct">—</div>
+        </div>
       </div>
-      <!-- Monthly target -->
-      <div class="rhero-section">
-        <div class="rhero-label">Monthly target</div>
-        <div class="rhero-value" id="monthly-target">—</div>
-        <div class="rhero-sub" id="target-remaining"></div>
-      </div>
-      <!-- YoY -->
-      <div class="rhero-section">
-        <div class="rhero-label">Same month last year</div>
-        <div class="rhero-value" id="yoy-value">—</div>
-        <div class="rhero-sub" id="yoy-trend"></div>
-      </div>
-    </div>
 
-    <!-- PAR tracker -->
-    <div class="par-section">
-      <div class="par-header">
-        <span class="par-title">Pace to target</span>
-        <span class="par-status" id="par-status"></span>
-      </div>
-      <div class="par-track-wrap" id="par-track-wrap">
-        <div class="par-fill" id="par-fill"></div>
-        <div class="par-marker" id="par-marker"></div>
-        <div class="par-marker-label" id="par-marker-label"></div>
-      </div>
-      <div class="par-footer">
-        <span id="par-days"></span>
-        <span id="par-projected-label"></span>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- ── Performance ── -->
-  <div class="section-label">Performance</div>
-  <div class="metric-grid">
-    <div class="metric-card"><div class="metric-label">Transactions</div><div class="metric-value" id="transactions">—</div><div class="metric-sub" id="transactions-trend"></div></div>
-    <div class="metric-card"><div class="metric-label">Avg Order Value</div><div class="metric-value" id="avg-order">—</div><div class="metric-sub" id="avg-order-trend"></div></div>
-    <div class="metric-card"><div class="metric-label">Return Customer Rate</div><div class="metric-value" id="return-rate">—</div><div class="metric-sub" id="return-rate-trend"></div></div>
-    <div class="metric-card"><div class="metric-label">Revenue vs Last Year</div><div class="metric-value" id="yoy-pct">—</div><div class="metric-sub" id="yoy-pct-sub"></div></div>
-  </div>
-
-  <div class="chart-row">
-    <div class="chart-card">
-      <div class="chart-title">Revenue — Trailing 6 Months</div>
-      <div style="position:relative; height:130px;"><canvas id="revChart"></canvas></div>
-    </div>
-    <div class="chart-card">
-      <div class="chart-title">New vs Returning Customers</div>
-      <div class="donut-wrap">
-        <div class="donut-canvas-wrap"><canvas id="custChart"></canvas></div>
-        <div class="donut-legend">
-          <span><span class="legend-dot" style="background:var(--accent)"></span>Returning</span>
-          <span><span class="legend-dot" style="background:#D3D1C7"></span>New</span>
+      <div class="par-section">
+        <div class="par-header">
+          <span class="par-title">Pace to Target</span>
+          <span class="par-status" id="parStatus">—</span>
+        </div>
+        <div class="par-track">
+          <div class="par-fill" id="parFill" style="width:0%"></div>
+          <div class="par-marker" id="parMarker" style="left:50%"></div>
+        </div>
+        <div class="par-footer">
+          <span id="parDay">—</span>
+          <span id="parLabel">PAR —</span>
+          <span id="parProjected">—</span>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- ── Cost Efficiency ── -->
-  <div class="section-label">Cost Efficiency</div>
-  <div class="metric-grid">
-    <div class="metric-card"><div class="metric-label">Gross Margin</div><div class="metric-value" id="gross-margin">—</div><div class="metric-sub" id="gross-margin-note"></div></div>
-    <div class="metric-card"><div class="metric-label">Labor % of Revenue</div><div class="metric-value" id="labor-pct">—</div><div class="metric-sub" id="labor-pct-trend"></div></div>
-    <div class="metric-card"><div class="metric-label">Net Margin</div><div class="metric-value" id="net-margin">—</div><div class="metric-sub" id="net-margin-trend"></div></div>
-    <div class="metric-card"><div class="metric-label">Break-even Threshold</div><div class="metric-value" id="breakeven">—</div><div class="metric-sub" id="breakeven-gap"></div></div>
-  </div>
+    <!-- CHANNEL BREAKDOWN -->
+    <div class="section-label">Revenue by Channel — MTD</div>
+    <div class="channel-strip">
+      <div class="channel-card">
+        <div class="channel-name">In-Store Books</div>
+        <div class="channel-value" id="chBooks">—</div>
+        <div class="channel-pct" id="chBooksPct">—</div>
+      </div>
+      <div class="channel-card">
+        <div class="channel-name">Sidelines</div>
+        <div class="channel-value" id="chSidelines">—</div>
+        <div class="channel-pct" id="chSidelinesPct">—</div>
+      </div>
+      <div class="channel-card">
+        <div class="channel-name">IndieCommerce</div>
+        <div class="channel-value" id="chIC">—</div>
+        <div class="channel-pct" id="chICPct">—</div>
+      </div>
+      <div class="channel-card">
+        <div class="channel-name">Bookshop.org</div>
+        <div class="channel-value" id="chBookshop">—</div>
+        <div class="channel-pct" id="chBookshopPct">—</div>
+      </div>
+      <div class="channel-card">
+        <div class="channel-name">Libro.fm</div>
+        <div class="channel-value" id="chLibro">—</div>
+        <div class="channel-pct" id="chLibroPct">—</div>
+      </div>
+    </div>
 
-  <!-- ── Financial Health ── -->
-  <div class="section-label">Financial Health</div>
-  <div class="metric-grid-3">
-    <div class="health-card"><div class="health-top"><div class="health-name">Cash Runway</div><div class="badge" id="cash-badge">—</div></div><div class="health-value" id="cash-value">—</div><div class="bar-track"><div class="bar-fill" id="cash-bar" style="width:0%"></div></div><div class="health-target" id="cash-target"></div></div>
-    <div class="health-card"><div class="health-top"><div class="health-name">Inventory Turnover</div><div class="badge" id="inv-badge">—</div></div><div class="health-value" id="inv-value">—</div><div class="bar-track"><div class="bar-fill" id="inv-bar" style="width:0%"></div></div><div class="health-target" id="inv-target"></div></div>
-    <div class="health-card"><div class="health-top"><div class="health-name">Purchase Frequency</div><div class="badge" id="freq-badge">—</div></div><div class="health-value" id="freq-value">—</div><div class="bar-track"><div class="bar-fill" id="freq-bar" style="width:0%"></div></div><div class="health-target" id="freq-target"></div></div>
-  </div>
+    <!-- PERFORMANCE -->
+    <div class="section-label">Performance</div>
+    <div class="metric-grid">
+      <div class="metric-card">
+        <div class="metric-label">Transactions</div>
+        <div class="metric-value" id="transactions">—</div>
+        <div class="metric-sub" id="transactionsSub">—</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Avg Order Value</div>
+        <div class="metric-value" id="aov">—</div>
+        <div class="metric-sub" id="aovSub">—</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">In-Store Margin</div>
+        <div class="metric-value" id="instoreMargin">—</div>
+        <div class="metric-sub" id="instoreMarginSub">—</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Revenue vs Last Year</div>
+        <div class="metric-value" id="yoyMetric">—</div>
+        <div class="metric-sub neutral">Projected vs same month LY</div>
+      </div>
+    </div>
+
+    <!-- CHARTS -->
+    <div class="charts-row">
+      <div class="chart-card">
+        <div class="chart-title">Revenue — Trailing 6 Months</div>
+        <div class="chart-wrap">
+          <canvas id="revenueChart" role="img" aria-label="Bar chart showing trailing 6 months of revenue">Revenue trend chart</canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Channel Mix — MTD</div>
+        <div class="chart-wrap" style="height:180px;display:flex;align-items:center;justify-content:center;">
+          <canvas id="channelChart" role="img" aria-label="Donut chart showing revenue by channel">Channel mix chart</canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- COST EFFICIENCY -->
+    <div class="section-label">Cost Efficiency</div>
+    <div class="cost-grid">
+      <div class="metric-card">
+        <div class="metric-label">In-Store Gross Margin</div>
+        <div class="metric-value" id="grossMargin">—</div>
+        <div class="metric-sub" id="grossMarginSub">—</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Labor % of Revenue</div>
+        <div class="metric-value" id="laborPct">—</div>
+        <div class="metric-sub" id="laborSub">—</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Net Margin</div>
+        <div class="metric-value" id="netMargin">—</div>
+        <div class="metric-sub neutral">Manual entry</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Break-Even Threshold</div>
+        <div class="metric-value" id="breakeven">—</div>
+        <div class="metric-sub" id="breakevenSub">—</div>
+      </div>
+    </div>
+
+    <!-- FINANCIAL HEALTH -->
+    <div class="section-label">Financial Health</div>
+    <div class="health-grid">
+      <div class="health-card">
+        <div class="health-header">
+          <span class="health-label">Cash Runway</span>
+          <span class="health-badge" id="cashBadge">—</span>
+        </div>
+        <div class="health-value" id="cashRunway">—</div>
+        <div class="health-bar-bg">
+          <div class="health-bar-fill" id="cashBar" style="width:0%;background:var(--green)"></div>
+        </div>
+        <div class="health-target" id="cashTarget">—</div>
+      </div>
+      <div class="health-card">
+        <div class="health-header">
+          <span class="health-label">Inventory Turnover</span>
+          <span class="health-badge" id="invBadge">—</span>
+        </div>
+        <div class="health-value" id="invTurnover">—</div>
+        <div class="health-bar-bg">
+          <div class="health-bar-fill" id="invBar" style="width:0%;background:var(--amber)"></div>
+        </div>
+        <div class="health-target" id="invTarget">—</div>
+      </div>
+      <div class="health-card">
+        <div class="health-header">
+          <span class="health-label">Purchase Frequency</span>
+          <span class="health-badge" id="freqBadge">—</span>
+        </div>
+        <div class="health-value" id="purchaseFreq">—</div>
+        <div class="health-bar-bg">
+          <div class="health-bar-fill" id="freqBar" style="width:0%;background:var(--green)"></div>
+        </div>
+        <div class="health-target" id="freqTarget">—</div>
+      </div>
+    </div>
+
+  </div><!-- /main -->
 
   <div class="footer">
-    <span>Queen Takes Book &nbsp;·&nbsp; Owner Dashboard &nbsp;·&nbsp; <span id="footer-period">—</span></span>
+    <span class="footer-text">Queen Takes Book · Owner Dashboard</span>
     <button class="refresh-btn" onclick="loadData()">↻ Refresh</button>
   </div>
 
-</div>
+</div><!-- /dashboard -->
+
 <script>
-// ══════════════════════════════════════════════════════════
-//  CONFIGURATION — paste your Google Sheets CSV URL here
-// ══════════════════════════════════════════════════════════
-const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSKcLJaMOFipnwTomQgF7a9BmYx8OnAyPur3fgNzKdqWAu3k3aTeE6SmiwyLYGqROcqZdr_VW-KofE-/pub?gid=575767265&single=true&output=csv";
+// ── Config ────────────────────────────────────────────────────────────────────
+const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSKcLJaMOFipnwTomQgF7a9BmYx8OnAyPur3fgNzKdqWAu3k3aTeE6SmiwyLYGqROcqZdr_VW-KofE-/pub?output=csv&gid=1319345253&cachebust=" + Date.now();
 
-// ── Sample data ───────────────────────────────────────────
-const SAMPLE = {
-  period: "April 2026",
-  // Revenue hero
-  mtd_revenue: 14200,
-  monthly_target: 26000,
-  same_month_last_year: 21500,
-  days_elapsed: 16,
-  days_in_month: 30,
-  // Performance
-  transactions: 421,
-  prev_transactions: 574,
-  avg_order_value: 33.73,
-  prev_avg_order_value: 29.80,
-  return_customer_rate: 41,
-  prev_return_customer_rate: 38,
-  // Revenue history (trailing 6 — update labels via rev_label keys)
-  rev_1: 15800, rev_1_label: 'Nov',
-  rev_2: 22100, rev_2_label: 'Dec',
-  rev_3: 13900, rev_3_label: 'Jan',
-  rev_4: 17500, rev_4_label: 'Feb',
-  rev_5: 25000, rev_5_label: 'Mar',
-  rev_6: 14200, rev_6_label: 'Apr',
-  returning_pct: 41,
-  // Cost efficiency
-  gross_margin: 43, gross_margin_target: 42,
-  labor_pct: 31, prev_labor_pct: 29,
-  net_margin: 6.1, prev_net_margin: 5.7,
-  breakeven: 14800,
-  // Financial health
-  cash_weeks: 11, cash_target: 8,
-  inventory_turnover: 3.8, inventory_turnover_target: 4.5,
-  purchase_frequency: 2.4, purchase_frequency_target: 2.5
-};
+// ── Helpers ───────────────────────────────────────────────────────────────────
+const fmt = n => isNaN(n) || n === '' ? '—' : '$' + parseFloat(n).toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0});
+const fmtK = n => isNaN(n) || n === '' ? '—' : '$' + (parseFloat(n)/1000).toFixed(1) + 'k';
+const pct  = n => isNaN(n) || n === '' ? '—' : (parseFloat(n)*100).toFixed(1) + '%';
+const num  = n => isNaN(n) || n === '' ? '—' : Math.round(parseFloat(n)).toLocaleString();
+const raw  = n => parseFloat(n) || 0;
 
-// ── Helpers ───────────────────────────────────────────────
-const $ = id => document.getElementById(id);
-const fmt$ = n => '$' + Number(n).toLocaleString('en-US', {maximumFractionDigits:0});
-
-function trend(cur, prev, fmtFn, higherIsBetter=true) {
-  const c = parseFloat(cur), p = parseFloat(prev);
-  if (isNaN(c)||isNaN(p)||p===0) return '';
-  const diff = c - p, up = diff > 0;
-  const good = higherIsBetter ? up : !up;
-  const cls  = diff===0 ? 'flat' : (good ? 'up' : 'down');
-  const arrow = diff===0 ? '—' : (up ? '▲' : '▼');
-  const label = fmtFn
-    ? `${arrow} ${fmtFn(Math.abs(diff))} vs last month`
-    : `${arrow} ${Math.abs(((diff/Math.abs(p))*100).toFixed(1))}% vs last month`;
-  return `<span class="${cls}">${label}</span>`;
+function arrow(val, invertGood) {
+  const v = parseFloat(val);
+  if (isNaN(v)) return '';
+  if (invertGood) return v > 0 ? '▲' : '▼';
+  return v >= 0 ? '▲' : '▼';
+}
+function colorClass(val, invertGood) {
+  const v = parseFloat(val);
+  if (isNaN(v)) return 'neutral';
+  if (invertGood) return v > 0 ? 'down' : 'up';
+  return v >= 0 ? 'up' : 'down';
 }
 
-function healthBadge(value, target, higherIsBetter=true) {
-  const ratio = higherIsBetter ? value/target : target/value;
-  if (ratio >= 0.95) return { cls:'badge-ok',   label:'Healthy',   bar:'bar-green' };
-  if (ratio >= 0.75) return { cls:'badge-warn',  label:'Watch',     bar:'bar-amber' };
-  return                    { cls:'badge-low',   label:'Off track', bar:'bar-red' };
-}
-
-// ── Revenue hero renderer ─────────────────────────────────
-function renderHero(d) {
-  const mtd      = parseFloat(d.mtd_revenue)          || 0;
-  const target   = parseFloat(d.monthly_target)        || 0;
-  const yoy      = parseFloat(d.same_month_last_year)  || 0;
-  const elapsed  = parseFloat(d.days_elapsed)          || 1;
-  const total    = parseFloat(d.days_in_month)         || 30;
-
-  // MTD
-  $('mtd-revenue').textContent = fmt$(mtd);
-
-  // Projected full month at current pace
-  const projected = Math.round((mtd / elapsed) * total);
-  const projVsTarget = projected - target;
-  const projCls = projVsTarget >= 0 ? 'up' : 'down';
-  $('mtd-projected').innerHTML = `<span class="${projCls}">Projecting ${fmt$(projected)} for month</span>`;
-
-  // Target
-  $('monthly-target').textContent = fmt$(target);
-  const remaining = target - mtd;
-  if (remaining > 0) {
-    $('target-remaining').innerHTML = `<span class="flat">${fmt$(remaining)} still needed</span>`;
-  } else {
-    $('target-remaining').innerHTML = `<span class="up">${fmt$(Math.abs(remaining))} over target</span>`;
-  }
-
-  // YoY
-  $('yoy-value').textContent = fmt$(yoy);
-  if (yoy > 0 && mtd > 0) {
-    // Compare projected full month vs same month last year
-    const yoyDiff = projected - yoy;
-    const yoyPct  = ((yoyDiff / yoy) * 100).toFixed(1);
-    const yoyCls  = yoyDiff >= 0 ? 'up' : 'down';
-    const yoyArrow = yoyDiff >= 0 ? '▲' : '▼';
-    $('yoy-trend').innerHTML = `<span class="${yoyCls}">${yoyArrow} ${Math.abs(yoyPct)}% projected vs last year</span>`;
-  }
-
-  // YoY summary card (4th perf metric)
-  if (yoy > 0 && mtd > 0) {
-    const fullYoyDiff = projected - yoy;
-    const fullYoyPct  = ((fullYoyDiff / yoy) * 100).toFixed(1);
-    const cls = fullYoyDiff >= 0 ? 'up' : 'down';
-    const arrow = fullYoyDiff >= 0 ? '▲' : '▼';
-    $('yoy-pct').innerHTML = `<span class="${cls}">${arrow} ${Math.abs(fullYoyPct)}%</span>`;
-    $('yoy-pct-sub').innerHTML = `<span class="flat">Projected vs same month LY</span>`;
-  }
-
-  // PAR bar
-  // PAR = where MTD should be if revenue were linear through the month
-  const parValue    = (target / total) * elapsed;
-  const mtdPct      = Math.min(100, (mtd / target) * 100);
-  const parPct      = Math.min(100, (parValue / target) * 100);
-  const ahead       = mtd >= parValue;
-
-  $('par-fill').style.width     = mtdPct + '%';
-  $('par-fill').style.background = ahead ? 'var(--green)' : 'var(--amber)';
-  $('par-marker').style.left    = parPct + '%';
-  $('par-marker-label').style.left = parPct + '%';
-  $('par-marker-label').textContent = 'PAR ' + fmt$(parValue);
-
-  const diffVsPar = mtd - parValue;
-  const diffCls   = diffVsPar >= 0 ? 'up' : 'down';
-  const diffArrow = diffVsPar >= 0 ? '▲' : '▼';
-  $('par-status').innerHTML = `<span class="${diffCls}">${diffArrow} ${fmt$(Math.abs(diffVsPar))} ${diffVsPar >= 0 ? 'ahead of' : 'behind'} pace</span>`;
-  $('par-days').textContent = `Day ${Math.round(elapsed)} of ${Math.round(total)}`;
-  $('par-projected-label').innerHTML = `<span>Projected: ${fmt$(projected)}</span>`;
-}
-
-// ── Charts ────────────────────────────────────────────────
-let revChart=null, custChart=null;
-function renderCharts(d) {
-  if (revChart)  revChart.destroy();
-  if (custChart) custChart.destroy();
-
-  const labels  = [1,2,3,4,5,6].map(i => d['rev_'+i+'_label'] || ('M'+i));
-  const revData = [1,2,3,4,5,6].map(i => parseFloat(d['rev_'+i]||0));
-
-  revChart = new Chart($('revChart'), {
-    type: 'bar',
-    data: {
-      labels,
-      datasets: [{ data: revData,
-        backgroundColor: revData.map((_,i) => i===revData.length-1 ? '#7F77DD' : '#CECBF6'),
-        borderRadius: 4, borderSkipped: false }]
-    },
-    options: {
-      responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{display:false} },
-      scales:{
-        x:{ grid:{display:false}, ticks:{color:'#AAAAAA',font:{size:10}} },
-        y:{ grid:{color:'rgba(0,0,0,0.05)'}, ticks:{color:'#AAAAAA',font:{size:10}, callback:v=>'$'+(v/1000).toFixed(0)+'k'} }
-      }
-    }
-  });
-
-  const ret = parseFloat(d.returning_pct)||41;
-  custChart = new Chart($('custChart'), {
-    type:'doughnut',
-    data:{
-      labels:[`Returning (${ret}%)`,`New (${100-ret}%)`],
-      datasets:[{ data:[ret,100-ret], backgroundColor:['#7F77DD','#D3D1C7'], borderWidth:0, hoverOffset:4 }]
-    },
-    options:{ responsive:true, maintainAspectRatio:false, cutout:'70%', plugins:{legend:{display:false}} }
-  });
-}
-
-// ── Main render ───────────────────────────────────────────
-function render(d) {
-  $('period-badge').textContent  = d.period||'—';
-  $('footer-period').textContent = d.period||'—';
-  $('last-updated').textContent  = 'Updated '+new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
-
-  renderHero(d);
-
-  // Performance cards
-  $('transactions').textContent = Number(d.transactions).toLocaleString();
-  $('transactions-trend').innerHTML = trend(d.transactions, d.prev_transactions, v=>'+'+Math.round(v));
-  $('avg-order').textContent = '$'+parseFloat(d.avg_order_value).toFixed(2);
-  $('avg-order-trend').innerHTML = trend(d.avg_order_value, d.prev_avg_order_value, v=>'$'+v.toFixed(2));
-  $('return-rate').textContent = Math.round(d.return_customer_rate)+'%';
-  $('return-rate-trend').innerHTML = trend(d.return_customer_rate, d.prev_return_customer_rate, v=>'+'+Math.round(v)+'pts');
-
-  // Cost efficiency
-  $('gross-margin').textContent = Math.round(d.gross_margin)+'%';
-  const gmOk = parseFloat(d.gross_margin) >= parseFloat(d.gross_margin_target);
-  $('gross-margin-note').innerHTML = `<span class="${gmOk?'up':'down'}">Target ≥${d.gross_margin_target}%</span>`;
-  $('labor-pct').textContent = Math.round(d.labor_pct)+'%';
-  $('labor-pct-trend').innerHTML = trend(d.labor_pct, d.prev_labor_pct, v=>'+'+Math.round(v)+'pts', false);
-  $('net-margin').textContent = parseFloat(d.net_margin).toFixed(1)+'%';
-  $('net-margin-trend').innerHTML = trend(d.net_margin, d.prev_net_margin, v=>'+'+v.toFixed(1)+'pts');
-  $('breakeven').textContent = fmt$(d.breakeven);
-  const gap = parseFloat(d.mtd_revenue) - parseFloat(d.breakeven);
-  $('breakeven-gap').innerHTML = gap>=0
-    ? `<span class="up">${fmt$(gap)} above floor</span>`
-    : `<span class="down">${fmt$(Math.abs(gap))} below floor</span>`;
-
-  // Financial health
-  function setHealth(vEl,bEl,badgeEl,tEl,value,target,displayVal,targetLabel,hib=true) {
-    const {cls,label,bar} = healthBadge(parseFloat(value),parseFloat(target),hib);
-    $(vEl).textContent = displayVal;
-    $(badgeEl).textContent = label;
-    $(badgeEl).className = 'badge '+cls;
-    const pct = Math.min(100, Math.round((parseFloat(value)/(parseFloat(target)*1.33))*100));
-    $(bEl).style.width = pct+'%';
-    $(bEl).className = 'bar-fill '+bar;
-    $(tEl).textContent = targetLabel;
-  }
-  setHealth('cash-value','cash-bar','cash-badge','cash-target', d.cash_weeks,d.cash_target, Math.round(d.cash_weeks)+' weeks','Target ≥'+d.cash_target+' weeks');
-  setHealth('inv-value','inv-bar','inv-badge','inv-target', d.inventory_turnover,d.inventory_turnover_target, parseFloat(d.inventory_turnover).toFixed(1)+'× / yr','Target ≥'+d.inventory_turnover_target+'×/yr');
-  setHealth('freq-value','freq-bar','freq-badge','freq-target', d.purchase_frequency,d.purchase_frequency_target, parseFloat(d.purchase_frequency).toFixed(1)+'× / yr','Target ≥'+d.purchase_frequency_target+'×/yr');
-
-  renderCharts(d);
-}
-
-// ── CSV parser ────────────────────────────────────────────
+// ── Parse CSV from Google Sheets ──────────────────────────────────────────────
 function parseCSV(text) {
   const data = {};
   const lines = text.trim().split('\n');
-  for (const line of lines) {
-    const parts = line.split(',');
-    if (parts.length >= 2) {
-      const key = parts[0].trim().toLowerCase().replace(/\s+/g,'_');
-      const val = parts.slice(1).join(',').trim().replace(/^"|"$/g,'');
-      data[key] = isNaN(val)||val==='' ? val : parseFloat(val);
+  lines.forEach(line => {
+    const cols = line.split(',');
+    if (cols.length >= 2) {
+      const key = cols[0].replace(/"/g, '').trim();
+      const val = cols[1].replace(/"/g, '').trim();
+      if (key) data[key] = val;
     }
-  }
+  });
   return data;
 }
 
-// ── Load ──────────────────────────────────────────────────
-async function loadData() {
-  if (!SHEET_URL) { render(SAMPLE); return; }
-  const bar = $('status-bar');
-  bar.className = 'status-bar visible';
-  $('status-text').textContent = 'Loading data...';
-  try {
-    const res = await fetch(SHEET_URL + '&cachebust=' + Date.now());
-    if (!res.ok) throw new Error('HTTP '+res.status);
-    const data = parseCSV(await res.text());
-    bar.className = 'status-bar';
-    render(data);
-  } catch(err) {
-    bar.className = 'status-bar visible error';
-    bar.querySelector('.spinner').style.display = 'none';
-    $('status-text').textContent = 'Could not load sheet data. Showing sample data.';
-    render(SAMPLE);
-  }
+// ── Charts ────────────────────────────────────────────────────────────────────
+let revenueChart = null;
+let channelChart = null;
+
+function buildRevenueChart(labels, values) {
+  if (revenueChart) revenueChart.destroy();
+  const ctx = document.getElementById('revenueChart').getContext('2d');
+  revenueChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Revenue',
+        data: values,
+        backgroundColor: values.map((v, i) =>
+          i === values.length - 1 ? 'rgba(200,169,110,0.7)' : 'rgba(126,184,164,0.5)'
+        ),
+        borderColor: values.map((v, i) =>
+          i === values.length - 1 ? '#c8a96e' : '#7eb8a4'
+        ),
+        borderWidth: 1,
+        borderRadius: 3,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: {
+          ticks: { color: '#888880', font: { size: 11 }, autoSkip: false },
+          grid: { display: false },
+          border: { color: '#2e2e2e' }
+        },
+        y: {
+          ticks: {
+            color: '#888880',
+            font: { size: 11 },
+            callback: v => '$' + (v/1000).toFixed(0) + 'k'
+          },
+          grid: { color: 'rgba(255,255,255,0.04)' },
+          border: { color: '#2e2e2e' }
+        }
+      }
+    }
+  });
 }
 
-loadData();
-</script>
-</body>
-</html>
+function buildChannelChart(labels, values) {
+  if (channelChart) channelChart.destroy();
+  // Filter out zero values
+  const filtered = labels.map((l, i) => ({ l, v: values[i] })).filter(x => x.v > 0);
+  if (!filtered.length) return;
+
+  const ctx = document.getElementById('channelChart').getContext('2d');
+  channelChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: filtered.map(x => x.l),
+      datasets: [{
+        data: filtered.map(x => x.v),
+        backgroundColor: ['#7eb8a4','#c8a96e','#c87e7e','#8fa8c8','#b89ec8'],
+        borderColor: '#1a1a1a',
+        borderWidth: 2,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '65%',
+      plugins: {
+        legend: {
+          display: true,
+          position: 'bottom',
+          labels: {
+            color: '#888880',
+            font: { size: 10 },
+            padding: 8,
+            boxWidth: 10,
+            boxHeight: 10,
+          }
+        }
+      }
+    }
+  });
+}
+
+// ── Main data loader ──────────────────────────────────────────────────────────
+async function loadData() {
+  try {
+    const url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSKcLJaMOFipnwTomQgF7a9BmYx8OnAyPur3fgNzKdqWAu3k3aTeE6SmiwyLYGqROcqZdr_VW-KofE-/pub?output=csv&gid=1319345253&cachebust=" + Date.now();
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('Failed to fetch');
+    const text = await res.text();
+    const d = parseCSV(text);
+
+    // ── Header ────────────────────────────────────────────────────────────────
+    document.getElementById('monthBadge').textContent = d['current_month_label'] || '—';
+    document.getElementById('updatedTime').textContent = 'Updated ' + new Date().toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'});
+
+    // ── Revenue Hero ──────────────────────────────────────────────────────────
+    const mtd      = raw(d['mtd_revenue']);
+    const target   = raw(d['monthly_target']);
+    const lastYear = raw(d['same_month_last_year']);
+    const daysEl   = raw(d['days_elapsed']);
+    const daysIn   = raw(d['days_in_month']);
+    const projected = daysEl > 0 ? (mtd / daysEl * daysIn) : 0;
+    const yoyDiff  = lastYear > 0 ? (projected - lastYear) / lastYear : 0;
+    const par      = daysIn > 0 ? (target / daysIn * daysEl) : 0;
+    const parVar   = mtd - par;
+
+    document.getElementById('mtdRevenue').textContent = fmt(mtd);
+    document.getElementById('projectedRev').innerHTML =
+      `<span class="${colorClass(projected - lastYear)}">Projecting ${fmt(projected)} for month</span>`;
+
+    document.getElementById('monthlyTarget').textContent = fmt(target);
+    const stillNeeded = target - mtd;
+    document.getElementById('stillNeeded').innerHTML =
+      stillNeeded > 0
+        ? `<span class="neutral">${fmt(stillNeeded)} still needed</span>`
+        : `<span class="up">Target reached!</span>`;
+
+    document.getElementById('lastYearRev').textContent = fmt(lastYear);
+    document.getElementById('yoyPct').innerHTML =
+      `<span class="${colorClass(yoyDiff)}">${arrow(yoyDiff)} ${(Math.abs(yoyDiff)*100).toFixed(1)}% projected vs last year</span>`;
+
+    // PAR bar
+    const fillPct = target > 0 ? Math.min((mtd / target) * 100, 100) : 0;
+    const markerPct = target > 0 ? Math.min((par / target) * 100, 100) : 50;
+    document.getElementById('parFill').style.width = fillPct + '%';
+    document.getElementById('parMarker').style.left = markerPct + '%';
+    document.getElementById('parDay').textContent = `Day ${Math.round(daysEl)} of ${Math.round(daysIn)}`;
+    document.getElementById('parLabel').textContent = `PAR ${fmt(par)}`;
+    document.getElementById('parProjected').textContent = `Projected: ${fmt(projected)}`;
+    const parStatusEl = document.getElementById('parStatus');
+    if (parVar >= 0) {
+      parStatusEl.innerHTML = `<span class="up">▲ ${fmt(parVar)} ahead of pace</span>`;
+    } else {
+      parStatusEl.innerHTML = `<span class="down">▼ ${fmt(Math.abs(parVar))} behind pace</span>`;
+    }
+
+    // ── Channel Breakdown ─────────────────────────────────────────────────────
+    const chBooks    = raw(d['mtd_instore_books']);
+    const chSide     = raw(d['mtd_instore_sidelines']);
+    const chConsign  = raw(d['mtd_consignment']);
+    const chIC       = raw(d['mtd_indiecommerce']);
+    const chBS       = raw(d['mtd_bookshop']);
+    const chLibro    = raw(d['mtd_librofm']);
+    const chTotal    = mtd || 1;
+
+    function setChannel(id, pctId, val) {
+      document.getElementById(id).textContent = fmt(val);
+      document.getElementById(pctId).textContent = val > 0
+        ? ((val/chTotal)*100).toFixed(1) + '% of total'
+        : '—';
+    }
+    setChannel('chBooks',    'chBooksPct',    chBooks);
+    setChannel('chSidelines','chSidelinesPct', chSide);
+    setChannel('chIC',       'chICPct',       chIC);
+    setChannel('chBookshop', 'chBookshopPct', chBS);
+    setChannel('chLibro',    'chLibroPct',    chLibro);
+
+    // ── Performance Metrics ───────────────────────────────────────────────────
+    const txn      = raw(d['mtd_transactions']);
+    const prevTxn  = raw(d['prev_month_transactions']);
+    const aovVal   = raw(d['mtd_avg_order_value']);
+    const prevAov  = raw(d['prev_month_aov']);
+    const margin   = raw(d['instore_gross_margin_pct']);
+    const prevMarg = raw(d['prev_month_margin_pct']);
+    const marginTgt= raw(d['instore_margin_target']) || 0.42;
+
+    document.getElementById('transactions').textContent = num(txn);
+    const txnDiff = txn - prevTxn;
+    document.getElementById('transactionsSub').innerHTML =
+      `<span class="${colorClass(txnDiff)}">${arrow(txnDiff)} ${num(Math.abs(txnDiff))} vs last month</span>`;
+
+    document.getElementById('aov').textContent = fmt(aovVal);
+    const aovDiff = aovVal - prevAov;
+    document.getElementById('aovSub').innerHTML =
+      `<span class="${colorClass(aovDiff)}">${arrow(aovDiff)} ${fmt(Math.abs(aovDiff))} vs last month</span>`;
+
+    document.getElementById('instoreMargin').textContent = pct(margin);
+    const margDiff = margin - prevMarg;
+    document.getElementById('instoreMarginSub').innerHTML =
+      `<span class="${colorClass(margDiff)}">${arrow(margDiff)} ${(Math.abs(margDiff)*100).toFixed(1)}pts vs last month</span>
+       <br><span class="neutral" style="font-size:10px">In-store books + sidelines only</span>`;
+
+    document.getElementById('yoyMetric').innerHTML =
+      `<span class="${colorClass(yoyDiff)}">${arrow(yoyDiff)} ${(Math.abs(yoyDiff)*100).toFixed(1)}%</span>`;
+
+    // ── Trailing 6 Month Chart ────────────────────────────────────────────────
+    const revLabels = [];
+    const revValues = [];
+    for (let i = 1; i <= 6; i++) {
+      const lbl = d[`rev_${i}_label`] || '';
+      const val = raw(d[`rev_${i}`]);
+      if (lbl) { revLabels.push(lbl); revValues.push(val); }
+    }
+    if (revLabels.length) buildRevenueChart(revLabels, revValues);
+
+    // ── Channel Mix Donut ─────────────────────────────────────────────────────
+    buildChannelChart(
+      ['Books', 'Sidelines', 'IndieCommerce', 'Bookshop', 'Libro.fm'],
+      [chBooks, chSide, chIC, chBS, chLibro]
+    );
+
+    // ── Cost Efficiency ───────────────────────────────────────────────────────
+    document.getElementById('grossMargin').textContent = pct(margin);
+    document.getElementById('grossMarginSub').innerHTML =
+      `<span class="${margin >= marginTgt ? 'up' : 'down'}">Target ≥${(marginTgt*100).toFixed(0)}%</span>`;
+
+    const laborPctVal = raw(d['labor_pct_revenue']);
+    const laborTgt    = raw(d['labor_target']) || 0.30;
+    document.getElementById('laborPct').textContent = pct(laborPctVal);
+    document.getElementById('laborSub').innerHTML =
+      `<span class="${laborPctVal <= laborTgt ? 'up' : 'down'}">Target ≤${(laborTgt*100).toFixed(0)}%</span>`;
+
+    const netMarg = raw(d['net_margin_pct']);
+    document.getElementById('netMargin').textContent = pct(netMarg);
+
+    const breakevenVal = raw(d['breakeven_threshold']);
+    document.getElementById('breakeven').textContent = fmt(breakevenVal);
+    const aboveFloor = mtd - breakevenVal;
+    document.getElementById('breakevenSub').innerHTML =
+      aboveFloor >= 0
+        ? `<span class="up">${fmt(aboveFloor)} above floor</span>`
+        : `<span class="down">${fmt(Math.abs(aboveFloor))} below floor</span>`;
+
+    // ── Financial Health ──────────────────────────────────────────────────────
+    function setHealth(valueId, barId, badgeId, targetId, val, target, unit, higherIsBetter) {
+      document.getElementById(valueId).textContent = val.toFixed(val % 1 === 0 ? 0 : 1) + unit;
+      const pctFill = Math.min((val / (target * 1.5)) * 100, 100);
+      document.getElementById(barId).style.width = pctFill + '%';
+      document.getElementById(targetId).textContent = `Target ${higherIsBetter ? '≥' : '≤'}${target}${unit}`;
+      const isGood = higherIsBetter ? val >= target : val <= target;
+      const isWarn = higherIsBetter ? val >= target * 0.7 : val <= target * 1.3;
+      const badge = document.getElementById(badgeId);
+      if (isGood) {
+        badge.textContent = 'Healthy'; badge.className = 'health-badge badge-green';
+        document.getElementById(barId).style.background = 'var(--green)';
+      } else if (isWarn) {
