@@ -738,9 +738,17 @@ function buildChannelChart(labels, values) {
 async function loadData() {
   try {
     const url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSKcLJaMOFipnwTomQgF7a9BmYx8OnAyPur3fgNzKdqWAu3k3aTeE6SmiwyLYGqROcqZdr_VW-KofE-/pub?output=csv&gid=1319345253&cachebust=" + Date.now();
-    const res = await fetch(url);
-    if (!res.ok) throw new Error('Failed to fetch');
+
+    // Timeout after 10 seconds
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000);
+
+    const res = await fetch(url, { signal: controller.signal });
+    clearTimeout(timeout);
+
+    if (!res.ok) throw new Error('HTTP ' + res.status);
     const text = await res.text();
+    if (!text || text.length < 20) throw new Error('Empty response from sheet');
     const d = parseCSV(text);
 
     // ── Header ────────────────────────────────────────────────────────────────
@@ -888,3 +896,34 @@ async function loadData() {
         badge.textContent = 'Healthy'; badge.className = 'health-badge badge-green';
         document.getElementById(barId).style.background = 'var(--green)';
       } else if (isWarn) {
+        badge.textContent = 'Watch'; badge.className = 'health-badge badge-amber';
+        document.getElementById(barId).style.background = 'var(--amber)';
+      } else {
+        badge.textContent = 'Attention'; badge.className = 'health-badge badge-red';
+        document.getElementById(barId).style.background = 'var(--red)';
+      }
+    }
+
+    setHealth('cashRunway',  'cashBar',  'cashBadge',  'cashTarget',  raw(d['cash_runway_weeks']),    raw(d['cash_runway_target']) || 8,   ' weeks', true);
+    setHealth('invTurnover', 'invBar',   'invBadge',   'invTarget',   raw(d['inventory_turnover']),   raw(d['inventory_target']) || 4.5,   'x / yr', true);
+    setHealth('purchaseFreq','freqBar',  'freqBadge',  'freqTarget',  raw(d['purchase_frequency']),   raw(d['purchase_freq_target']) || 2.5,'x / yr', true);
+
+    // ── Show dashboard ────────────────────────────────────────────────────────
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+
+  } catch(err) {
+    console.error('Dashboard error:', err);
+    const msg = err.name === 'AbortError'
+      ? 'Request timed out — Google Sheets may be slow. Try refreshing.'
+      : 'Could not load data: ' + err.message;
+    document.getElementById('loading').innerHTML =
+      `<p style="color:var(--red);font-size:13px;text-align:center;max-width:320px;">${msg}<br><br>` +
+      `<button onclick="loadData()" style="margin-top:8px;padding:6px 14px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:6px;cursor:pointer;font-family:inherit;">↻ Retry</button></p>`;
+  }
+}
+
+loadData();
+</script>
+</body>
+</html>
