@@ -613,11 +613,26 @@
 const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSKcLJaMOFipnwTomQgF7a9BmYx8OnAyPur3fgNzKdqWAu3k3aTeE6SmiwyLYGqROcqZdr_VW-KofE-/pub?output=csv&gid=1319345253&cachebust=" + Date.now();
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-const fmt = n => isNaN(n) || n === '' ? '—' : '$' + parseFloat(n).toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0});
-const fmtK = n => isNaN(n) || n === '' ? '—' : '$' + (parseFloat(n)/1000).toFixed(1) + 'k';
-const pct  = n => isNaN(n) || n === '' ? '—' : (parseFloat(n)*100).toFixed(1) + '%';
-const num  = n => isNaN(n) || n === '' ? '—' : Math.round(parseFloat(n)).toLocaleString();
-const raw  = n => parseFloat(n) || 0;
+// Clean a value exported from Google Sheets CSV
+// Handles: "$15,234.00", "44.1%", "0.441", plain numbers
+function cleanNum(val) {
+  if (val === undefined || val === null || val === '') return NaN;
+  const s = String(val).trim();
+  if (s === '' || s === '—') return NaN;
+  // Percentage string e.g. "44.1%" → 0.441
+  if (s.endsWith('%')) {
+    const n = parseFloat(s.replace('%','').replace(/,/g,''));
+    return isNaN(n) ? NaN : n / 100;
+  }
+  // Currency/number string e.g. "$15,234.00" or "15234"
+  const cleaned = s.replace(/[$,\s]/g,'').replace(/\(([^)]+)\)/,'-$1');
+  return parseFloat(cleaned);
+}
+const fmt = n => { const v = cleanNum(n); return isNaN(v) ? '—' : '$' + Math.round(v).toLocaleString('en-US'); };
+const fmtK = n => { const v = cleanNum(n); return isNaN(v) ? '—' : '$' + (v/1000).toFixed(1) + 'k'; };
+const pct  = n => { const v = cleanNum(n); return isNaN(v) ? '—' : (v*100).toFixed(1) + '%'; };
+const num  = n => { const v = cleanNum(n); return isNaN(v) ? '—' : Math.round(v).toLocaleString(); };
+const raw  = n => { const v = cleanNum(n); return isNaN(v) ? 0 : v; };
 
 function arrow(val, invertGood) {
   const v = parseFloat(val);
@@ -637,11 +652,21 @@ function parseCSV(text) {
   const data = {};
   const lines = text.trim().split('\n');
   lines.forEach(line => {
-    const cols = line.split(',');
+    // Proper CSV parsing — handle quoted fields containing commas
+    const cols = [];
+    let inQuote = false, cur = '';
+    for (let i = 0; i < line.length; i++) {
+      const c = line[i];
+      if (c === '"') { inQuote = !inQuote; }
+      else if (c === ',' && !inQuote) { cols.push(cur); cur = ''; }
+      else { cur += c; }
+    }
+    cols.push(cur);
     if (cols.length >= 2) {
-      const key = cols[0].replace(/"/g, '').trim();
-      const val = cols[1].replace(/"/g, '').trim();
-      if (key) data[key] = val;
+      const key = cols[0].replace(/"/g,'').trim();
+      const val = cols[1].replace(/"/g,'').trim();
+      // Skip section heading rows (they start with ──)
+      if (key && !key.startsWith('\u2500')) data[key] = val;
     }
   });
   return data;
