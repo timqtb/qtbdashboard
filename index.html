@@ -778,7 +778,11 @@ async function loadData() {
 
     // ── Header ────────────────────────────────────────────────────────────────
     document.getElementById('monthBadge').textContent = d['current_month_label'] || '—';
-    document.getElementById('updatedTime').textContent = 'Updated ' + new Date().toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'});
+    // Show the last complete data date (yesterday), not the page load time
+    const dataThrough = new Date();
+    dataThrough.setDate(dataThrough.getDate() - 1);
+    const dataThroughStr = dataThrough.toLocaleDateString('en-US', {month:'short', day:'numeric'});
+    document.getElementById('updatedTime').textContent = 'Data through ' + dataThroughStr;
 
     // ── Revenue Hero ──────────────────────────────────────────────────────────
     const mtd      = raw(d['mtd_revenue']);
@@ -793,7 +797,7 @@ async function loadData() {
 
     document.getElementById('mtdRevenue').textContent = fmt(mtd);
     document.getElementById('projectedRev').innerHTML =
-      `<span class="${colorClass(projected - lastYear)}">Projecting ${fmt(projected)} for month</span>`;
+      `<span class="${colorClass(projected - lastYear)}">Projecting ${fmt(projected)} for month</span><span class="neutral" style="font-size:10px;display:block;margin-top:2px;">based on data through ${dataThroughStr}</span>`;
 
     document.getElementById('monthlyTarget').textContent = fmt(target);
     const stillNeeded = target - mtd;
@@ -811,7 +815,7 @@ async function loadData() {
     const markerPct = target > 0 ? Math.min((par / target) * 100, 100) : 50;
     document.getElementById('parFill').style.width = fillPct + '%';
     document.getElementById('parMarker').style.left = markerPct + '%';
-    document.getElementById('parDay').textContent = `Day ${Math.round(daysEl)} of ${Math.round(daysIn)}`;
+    document.getElementById('parDay').textContent = `Through ${dataThroughStr}`;
     document.getElementById('parLabel').textContent = `PAR ${fmt(par)}`;
     document.getElementById('parProjected').textContent = `Projected: ${fmt(projected)}`;
     const parStatusEl = document.getElementById('parStatus');
@@ -852,9 +856,10 @@ async function loadData() {
     const marginTgt= raw(d['instore_margin_target']) || 0.42;
 
     document.getElementById('transactions').textContent = num(txn);
-    const txnDiff = txn - prevTxn;
+    const prevTxnTD = raw(d['prev_month_transactions_to_date']);
+    const txnDiff = txn - prevTxnTD;
     document.getElementById('transactionsSub').innerHTML =
-      `<span class="${colorClass(txnDiff)}">${arrow(txnDiff)} ${num(Math.abs(txnDiff))} vs last month</span>`;
+      `<span class="${colorClass(txnDiff)}">${arrow(txnDiff)} ${num(Math.abs(txnDiff))} vs same day last month</span>`;
 
     document.getElementById('aov').textContent = fmt(aovVal);
     const aovDiff = aovVal - prevAov;
