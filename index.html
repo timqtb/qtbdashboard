@@ -910,7 +910,7 @@ async function loadData() {
       laborCostMtd > 0 ? fmt(laborCostMtd) + ' MTD loaded labor cost' : '';
     document.getElementById('laborVsPrevMonth').innerHTML =
       laborPrevPct > 0
-        ? `<span class="${colorClass(-laborPctDiff)}">${arrow(-laborPctDiff)} ${(Math.abs(laborPctDiff)*100).toFixed(1)}pts vs same period last month</span>`
+        ? `<span class="${colorClass(-laborPctDiff)}">${arrow(laborPctDiff)} ${(Math.abs(laborPctDiff)*100).toFixed(1)}pts vs same period last month</span>`
         : '';
 
     const netMarg = raw(d['net_margin_pct']);
