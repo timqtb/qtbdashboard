@@ -545,9 +545,11 @@
         <div class="metric-sub" id="grossMarginSub">—</div>
       </div>
       <div class="metric-card">
-        <div class="metric-label">Labor % of Revenue</div>
+        <div class="metric-label">Labor % of Revenue — MTD</div>
         <div class="metric-value" id="laborPct">—</div>
         <div class="metric-sub" id="laborSub">—</div>
+        <div class="metric-sub" id="laborCost" style="margin-top:3px;color:var(--muted);font-size:11px;">—</div>
+        <div class="metric-sub" id="laborVsPrevMonth" style="margin-top:2px;font-size:11px;">—</div>
       </div>
       <div class="metric-card">
         <div class="metric-label">Net Margin</div>
@@ -778,11 +780,7 @@ async function loadData() {
 
     // ── Header ────────────────────────────────────────────────────────────────
     document.getElementById('monthBadge').textContent = d['current_month_label'] || '—';
-    // Show the last complete data date (yesterday), not the page load time
-    const dataThrough = new Date();
-    dataThrough.setDate(dataThrough.getDate() - 1);
-    const dataThroughStr = dataThrough.toLocaleDateString('en-US', {month:'short', day:'numeric'});
-    document.getElementById('updatedTime').textContent = 'Data through ' + dataThroughStr;
+    document.getElementById('updatedTime').textContent = 'Updated ' + new Date().toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'});
 
     // ── Revenue Hero ──────────────────────────────────────────────────────────
     const mtd      = raw(d['mtd_revenue']);
@@ -797,7 +795,7 @@ async function loadData() {
 
     document.getElementById('mtdRevenue').textContent = fmt(mtd);
     document.getElementById('projectedRev').innerHTML =
-      `<span class="${colorClass(projected - lastYear)}">Projecting ${fmt(projected)} for month</span><span class="neutral" style="font-size:10px;display:block;margin-top:2px;">based on data through ${dataThroughStr}</span>`;
+      `<span class="${colorClass(projected - lastYear)}">Projecting ${fmt(projected)} for month</span>`;
 
     document.getElementById('monthlyTarget').textContent = fmt(target);
     const stillNeeded = target - mtd;
@@ -815,7 +813,7 @@ async function loadData() {
     const markerPct = target > 0 ? Math.min((par / target) * 100, 100) : 50;
     document.getElementById('parFill').style.width = fillPct + '%';
     document.getElementById('parMarker').style.left = markerPct + '%';
-    document.getElementById('parDay').textContent = `Through ${dataThroughStr}`;
+    document.getElementById('parDay').textContent = `Day ${Math.round(daysEl)} of ${Math.round(daysIn)}`;
     document.getElementById('parLabel').textContent = `PAR ${fmt(par)}`;
     document.getElementById('parProjected').textContent = `Projected: ${fmt(projected)}`;
     const parStatusEl = document.getElementById('parStatus');
@@ -856,10 +854,9 @@ async function loadData() {
     const marginTgt= raw(d['instore_margin_target']) || 0.42;
 
     document.getElementById('transactions').textContent = num(txn);
-    const prevTxnTD = raw(d['prev_month_transactions_to_date']);
-    const txnDiff = txn - prevTxnTD;
+    const txnDiff = txn - prevTxn;
     document.getElementById('transactionsSub').innerHTML =
-      `<span class="${colorClass(txnDiff)}">${arrow(txnDiff)} ${num(Math.abs(txnDiff))} vs same day last month</span>`;
+      `<span class="${colorClass(txnDiff)}">${arrow(txnDiff)} ${num(Math.abs(txnDiff))} vs last month</span>`;
 
     document.getElementById('aov').textContent = fmt(aovVal);
     const aovDiff = aovVal - prevAov;
@@ -896,11 +893,25 @@ async function loadData() {
     document.getElementById('grossMarginSub').innerHTML =
       `<span class="${margin >= marginTgt ? 'up' : 'down'}">Target ≥${(marginTgt*100).toFixed(0)}%</span>`;
 
-    const laborPctVal = raw(d['labor_pct_revenue']);
-    const laborTgt    = raw(d['labor_target']) || 0.30;
-    document.getElementById('laborPct').textContent = pct(laborPctVal);
+    const laborCostMtd      = raw(d['labor_cost_mtd']);
+    const laborTgt          = raw(d['labor_cost_target_pct']) || 0.30;
+    const laborPctVal       = mtd > 0 ? laborCostMtd / mtd : 0;
+    const laborPrevMtdCost  = raw(d['labor_cost_prev_month_to_date']);
+    const laborPrevMtdRev   = raw(d['prev_month_revenue_to_date']) || raw(d['prev_month_revenue']) || 0;
+    const laborPrevPct      = laborPrevMtdRev > 0 ? laborPrevMtdCost / laborPrevMtdRev : 0;
+    const laborPctDiff      = laborPctVal - laborPrevPct;
+
+    document.getElementById('laborPct').textContent = laborPctVal > 0 ? pct(laborPctVal) : '—';
     document.getElementById('laborSub').innerHTML =
-      `<span class="${laborPctVal <= laborTgt ? 'up' : 'down'}">Target ≤${(laborTgt*100).toFixed(0)}%</span>`;
+      laborPctVal > 0
+        ? `<span class="${laborPctVal <= laborTgt ? 'up' : 'down'}">Target ≤${(laborTgt*100).toFixed(0)}% · ABACUS median 30%</span>`
+        : `<span class="neutral">Target ≤${(laborTgt*100).toFixed(0)}%</span>`;
+    document.getElementById('laborCost').textContent =
+      laborCostMtd > 0 ? fmt(laborCostMtd) + ' MTD loaded labor cost' : '';
+    document.getElementById('laborVsPrevMonth').innerHTML =
+      laborPrevPct > 0
+        ? `<span class="${colorClass(-laborPctDiff)}">${arrow(-laborPctDiff)} ${(Math.abs(laborPctDiff)*100).toFixed(1)}pts vs same period last month</span>`
+        : '';
 
     const netMarg = raw(d['net_margin_pct']);
     document.getElementById('netMargin').textContent = pct(netMarg);
