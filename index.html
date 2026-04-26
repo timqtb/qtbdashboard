@@ -846,7 +846,7 @@ async function loadData() {
 
     // ── Performance Metrics ───────────────────────────────────────────────────
     const txn      = raw(d['mtd_transactions']);
-    const prevTxn  = raw(d['prev_month_transactions']);
+    const prevTxn  = raw(d['prev_month_transactions_to_date']);
     const aovVal   = raw(d['mtd_avg_order_value']);
     const prevAov  = raw(d['prev_month_aov']);
     const margin   = raw(d['instore_gross_margin_pct']);
@@ -856,7 +856,7 @@ async function loadData() {
     document.getElementById('transactions').textContent = num(txn);
     const txnDiff = txn - prevTxn;
     document.getElementById('transactionsSub').innerHTML =
-      `<span class="${colorClass(txnDiff)}">${arrow(txnDiff)} ${num(Math.abs(txnDiff))} vs last month</span>`;
+      `<span class="${colorClass(txnDiff)}">${arrow(txnDiff)} ${num(Math.abs(txnDiff))} vs same day last month</span>`;
 
     document.getElementById('aov').textContent = fmt(aovVal);
     const aovDiff = aovVal - prevAov;
