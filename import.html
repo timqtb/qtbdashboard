@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Queen Takes Book — Import Daily Sales</title>
+<title>Queen Takes Book — Daily Import</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap');
 
@@ -21,7 +21,6 @@
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
   body {
     background: var(--bg);
     color: var(--text);
@@ -40,60 +39,39 @@
     justify-content: space-between;
     align-items: center;
   }
-  .header-left h1 {
-    font-family: 'DM Serif Display', serif;
-    font-size: 22px;
-    font-weight: 400;
-    color: var(--text);
-  }
-  .header-left p {
-    font-size: 11px;
-    color: var(--muted);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    margin-top: 2px;
-  }
-  .nav-link {
-    font-size: 12px;
-    color: var(--muted);
-    text-decoration: none;
-    border: 1px solid var(--border);
-    padding: 6px 14px;
-    border-radius: 6px;
-    transition: color 0.2s, border-color 0.2s;
-  }
+  .header-left h1 { font-family: 'DM Serif Display', serif; font-size: 22px; font-weight: 400; }
+  .header-left p { font-size: 11px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; margin-top: 2px; }
+  .nav-link { font-size: 12px; color: var(--muted); text-decoration: none; border: 1px solid var(--border); padding: 6px 14px; border-radius: 6px; transition: color 0.2s, border-color 0.2s; }
   .nav-link:hover { color: var(--accent); border-color: var(--accent); }
 
-  .main {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 40px 28px;
-    gap: 24px;
-  }
+  .main { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 40px 28px; gap: 20px; }
 
-  .page-title {
-    text-align: center;
-  }
-  .page-title h2 {
-    font-family: 'DM Serif Display', serif;
-    font-size: 28px;
-    font-weight: 400;
-    color: var(--text);
-    margin-bottom: 6px;
-  }
-  .page-title p {
-    font-size: 13px;
+  .page-title { text-align: center; }
+  .page-title h2 { font-family: 'DM Serif Display', serif; font-size: 28px; font-weight: 400; margin-bottom: 6px; }
+  .page-title p { font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+  /* Import type tabs */
+  .type-tabs { display: flex; gap: 8px; }
+  .type-tab {
+    padding: 8px 20px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: transparent;
     color: var(--muted);
-    line-height: 1.6;
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .type-tab.active {
+    background: var(--surface);
+    border-color: var(--accent2);
+    color: var(--accent2);
   }
 
   /* Drop zone */
   .drop-zone {
-    width: 100%;
-    max-width: 520px;
+    width: 100%; max-width: 520px;
     border: 1.5px dashed var(--border);
     border-radius: 12px;
     padding: 48px 32px;
@@ -103,185 +81,62 @@
     position: relative;
     background: var(--surface);
   }
-  .drop-zone:hover, .drop-zone.dragover {
-    border-color: var(--accent2);
-    background: rgba(126,184,164,0.05);
-  }
-  .drop-zone input[type=file] {
-    position: absolute;
-    inset: 0;
-    opacity: 0;
-    cursor: pointer;
-    width: 100%;
-    height: 100%;
-  }
-  .drop-icon {
-    font-size: 32px;
-    margin-bottom: 12px;
-    opacity: 0.5;
-  }
-  .drop-title {
-    font-size: 15px;
-    font-weight: 500;
-    color: var(--text);
-    margin-bottom: 6px;
-  }
-  .drop-sub {
-    font-size: 12px;
-    color: var(--muted);
-    line-height: 1.6;
-  }
-  .drop-filename {
-    margin-top: 14px;
-    font-size: 12px;
-    color: var(--accent2);
-    font-family: 'DM Sans', monospace;
-    display: none;
-  }
+  .drop-zone:hover, .drop-zone.dragover { border-color: var(--accent2); background: rgba(126,184,164,0.05); }
+  .drop-zone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+  .drop-icon { font-size: 32px; margin-bottom: 12px; opacity: 0.5; }
+  .drop-title { font-size: 15px; font-weight: 500; margin-bottom: 6px; }
+  .drop-hint { font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .drop-filename { margin-top: 14px; font-size: 12px; color: var(--accent2); display: none; }
 
   /* Import button */
   .import-btn {
-    width: 100%;
-    max-width: 520px;
+    width: 100%; max-width: 520px;
     padding: 14px;
     background: var(--accent2);
     color: #0f0f0f;
-    border: none;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 600;
+    border: none; border-radius: 8px;
+    font-size: 14px; font-weight: 600;
     font-family: 'DM Sans', sans-serif;
-    cursor: pointer;
-    transition: opacity 0.2s;
+    cursor: pointer; transition: opacity 0.2s;
     display: none;
   }
   .import-btn:hover { opacity: 0.85; }
   .import-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
-  /* Status card */
-  .status-card {
-    width: 100%;
-    max-width: 520px;
-    border-radius: 10px;
-    padding: 18px 20px;
-    display: none;
-    animation: fadeIn 0.3s ease;
-  }
-  .status-card.processing {
-    background: var(--surface);
-    border: 1px solid var(--border);
-  }
-  .status-card.success {
-    background: rgba(109,184,138,0.1);
-    border: 1px solid rgba(109,184,138,0.3);
-  }
-  .status-card.error {
-    background: rgba(200,126,126,0.1);
-    border: 1px solid rgba(200,126,126,0.3);
-  }
-  .status-title {
-    font-size: 13px;
-    font-weight: 600;
-    margin-bottom: 8px;
-  }
+  /* Status */
+  .status-card { width: 100%; max-width: 520px; border-radius: 10px; padding: 18px 20px; display: none; animation: fadeIn 0.3s ease; }
+  .status-card.processing { background: var(--surface); border: 1px solid var(--border); }
+  .status-card.success { background: rgba(109,184,138,0.1); border: 1px solid rgba(109,184,138,0.3); }
+  .status-card.error { background: rgba(200,126,126,0.1); border: 1px solid rgba(200,126,126,0.3); }
+  .status-title { font-size: 13px; font-weight: 600; margin-bottom: 8px; }
   .status-card.processing .status-title { color: var(--muted); }
   .status-card.success .status-title { color: var(--green); }
   .status-card.error .status-title { color: var(--red); }
   .status-body { font-size: 12px; color: var(--muted); line-height: 1.7; }
 
-  /* Result metrics */
-  .result-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-    margin-top: 12px;
-  }
-  .result-metric {
-    background: var(--surface2);
-    border-radius: 6px;
-    padding: 10px 12px;
-  }
-  .result-label {
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--muted);
-    margin-bottom: 3px;
-  }
-  .result-value {
-    font-size: 16px;
-    font-weight: 500;
-    color: var(--text);
-  }
+  /* Result grid */
+  .result-grid { display: grid; gap: 8px; margin-top: 12px; }
+  .result-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+  .result-grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
+  .result-metric { background: var(--surface2); border-radius: 6px; padding: 10px 12px; }
+  .result-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 3px; }
+  .result-value { font-size: 15px; font-weight: 500; color: var(--text); }
+  .result-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
 
-  /* Manual fields reminder */
-  .manual-reminder {
-    width: 100%;
-    max-width: 520px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 14px 16px;
-    display: none;
-  }
-  .manual-reminder-title {
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 8px;
-  }
-  .manual-fields {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-  }
-  .manual-tag {
-    font-size: 11px;
-    padding: 3px 8px;
-    border-radius: 10px;
-    background: var(--surface2);
-    color: var(--muted);
-    border: 1px solid var(--border);
-  }
+  /* Manual reminder */
+  .manual-reminder { width: 100%; max-width: 520px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; display: none; }
+  .manual-reminder-title { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+  .manual-fields { display: flex; flex-wrap: wrap; gap: 6px; }
+  .manual-tag { font-size: 11px; padding: 3px 8px; border-radius: 10px; background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
 
-  /* Reset link */
-  .reset-link {
-    font-size: 12px;
-    color: var(--muted);
-    cursor: pointer;
-    text-decoration: underline;
-    display: none;
-    text-underline-offset: 3px;
-  }
+  .reset-link { font-size: 12px; color: var(--muted); cursor: pointer; text-decoration: underline; display: none; text-underline-offset: 3px; }
   .reset-link:hover { color: var(--text); }
 
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(4px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
+  .footer { border-top: 1px solid var(--border); padding: 14px 28px; text-align: center; font-size: 11px; color: var(--muted); }
 
-  /* Spinner */
-  .spinner {
-    display: inline-block;
-    width: 14px; height: 14px;
-    border: 2px solid var(--border);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    vertical-align: middle;
-    margin-right: 6px;
-  }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+  .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; vertical-align: middle; margin-right: 6px; }
   @keyframes spin { to { transform: rotate(360deg); } }
-
-  .footer {
-    border-top: 1px solid var(--border);
-    padding: 14px 28px;
-    text-align: center;
-    font-size: 11px;
-    color: var(--muted);
-  }
 </style>
 </head>
 <body>
@@ -289,7 +144,7 @@
 <div class="header">
   <div class="header-left">
     <h1>Queen Takes Book</h1>
-    <p>Daily Sales Import</p>
+    <p>Daily Import</p>
   </div>
   <a href="/" class="nav-link">← Dashboard</a>
 </div>
@@ -297,85 +152,92 @@
 <div class="main">
 
   <div class="page-title">
-    <h2>Import Basil Daily Report</h2>
-    <p>Drop today's Sales by All Sections CSV to automatically import<br>book, sidelines and consignment totals into the dashboard.</p>
+    <h2>Import Daily Reports</h2>
+    <p>Drop a Basil sales report or Gusto labor report to automatically<br>populate your dashboard data for that day.</p>
+  </div>
+
+  <div class="type-tabs">
+    <button class="type-tab active" id="tab-sales" onclick="switchType('sales')">📄 Basil Sales</button>
+    <button class="type-tab" id="tab-labor" onclick="switchType('labor')">🕐 Gusto Labor</button>
   </div>
 
   <div class="drop-zone" id="dropZone">
     <input type="file" id="fileInput" accept=".csv" />
     <div class="drop-icon">📄</div>
     <div class="drop-title">Drop CSV here or click to browse</div>
-    <div class="drop-sub">ReportSalesByAllSections-YYYY-MM-DD.csv</div>
+    <div class="drop-hint" id="dropHint">ReportSalesByAllSections-YYYY-MM-DD.csv</div>
     <div class="drop-filename" id="dropFilename"></div>
   </div>
 
-  <button class="import-btn" id="importBtn" onclick="runImport()">
-    Import to Dashboard
-  </button>
+  <button class="import-btn" id="importBtn" onclick="runImport()">Import to Dashboard</button>
 
   <div class="status-card" id="statusCard">
     <div class="status-title" id="statusTitle"></div>
     <div class="status-body" id="statusBody"></div>
-    <div class="result-grid" id="resultGrid" style="display:none"></div>
+    <div class="result-grid cols-3" id="resultGrid" style="display:none"></div>
   </div>
 
   <div class="manual-reminder" id="manualReminder">
-    <div class="manual-reminder-title">Still enter manually in Excel</div>
-    <div class="manual-fields">
-      <span class="manual-tag">IndieCommerce</span>
-      <span class="manual-tag">Bookshop.org</span>
-      <span class="manual-tag">Libro.fm</span>
-      <span class="manual-tag">Invoice revenue</span>
-      <span class="manual-tag">Other revenue</span>
-      <span class="manual-tag">Notes</span>
-    </div>
+    <div class="manual-reminder-title" id="reminderTitle">Still enter manually in Excel</div>
+    <div class="manual-fields" id="reminderFields"></div>
   </div>
 
   <span class="reset-link" id="resetLink" onclick="reset()">Import another file</span>
 
 </div>
 
-<div class="footer">
-  Queen Takes Book · Owner Tools
-</div>
+<div class="footer">Queen Takes Book · Owner Tools</div>
 
 <script>
-const WORKER_URL = "https://qtb-basil-importer.tim-7f2.workers.dev/";
+const WORKERS = {
+  sales: "https://qtb-basil-importer.tim-7f2.workers.dev/",
+  labor: "https://qtb-labor-importer.tim-7f2.workers.dev/",
+};
 
+const HINTS = {
+  sales: "ReportSalesByAllSections-YYYY-MM-DD.csv",
+  labor: "queen-takes-book-llc-time-tracking-hours-YYYY-MM-DD-to-YYYY-MM-DD.csv",
+};
+
+const MANUAL_FIELDS = {
+  sales: ["IndieCommerce", "Bookshop.org", "Libro.fm", "Invoice revenue", "Other revenue", "Notes"],
+  labor: [],
+};
+
+let currentType = "sales";
 let selectedFile = null;
 
-const dropZone   = document.getElementById('dropZone');
-const fileInput  = document.getElementById('fileInput');
-const importBtn  = document.getElementById('importBtn');
-const statusCard = document.getElementById('statusCard');
-const statusTitle= document.getElementById('statusTitle');
-const statusBody = document.getElementById('statusBody');
-const resultGrid = document.getElementById('resultGrid');
-const dropFilename = document.getElementById('dropFilename');
+const dropZone    = document.getElementById('dropZone');
+const fileInput   = document.getElementById('fileInput');
+const importBtn   = document.getElementById('importBtn');
+const statusCard  = document.getElementById('statusCard');
+const statusTitle = document.getElementById('statusTitle');
+const statusBody  = document.getElementById('statusBody');
+const resultGrid  = document.getElementById('resultGrid');
+const dropHint    = document.getElementById('dropHint');
+const dropFilename= document.getElementById('dropFilename');
 const manualReminder = document.getElementById('manualReminder');
-const resetLink  = document.getElementById('resetLink');
+const resetLink   = document.getElementById('resetLink');
+
+function switchType(type) {
+  currentType = type;
+  document.getElementById('tab-sales').classList.toggle('active', type === 'sales');
+  document.getElementById('tab-labor').classList.toggle('active', type === 'labor');
+  dropHint.textContent = HINTS[type];
+  reset();
+}
 
 // Drag and drop
-dropZone.addEventListener('dragover', e => {
-  e.preventDefault();
-  dropZone.classList.add('dragover');
-});
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
 dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
 dropZone.addEventListener('drop', e => {
-  e.preventDefault();
-  dropZone.classList.remove('dragover');
-  const file = e.dataTransfer.files[0];
-  if (file) setFile(file);
+  e.preventDefault(); dropZone.classList.remove('dragover');
+  if (e.dataTransfer.files[0]) setFile(e.dataTransfer.files[0]);
 });
-fileInput.addEventListener('change', e => {
-  if (e.target.files[0]) setFile(e.target.files[0]);
-});
+fileInput.addEventListener('change', e => { if (e.target.files[0]) setFile(e.target.files[0]); });
 
 function setFile(file) {
-  if (!file.name.endsWith('.csv')) {
-    showStatus('error', 'Wrong file type', 'Please select a .csv file from Basil.');
-    return;
-  }
+  if (!file.name.endsWith('.csv')) { showStatus('error', 'Wrong file type', 'Please select a .csv file.'); return; }
   selectedFile = file;
   dropFilename.textContent = file.name;
   dropFilename.style.display = 'block';
@@ -387,45 +249,48 @@ function setFile(file) {
 
 async function runImport() {
   if (!selectedFile) return;
-
   importBtn.disabled = true;
-  showStatus('processing', '<span class="spinner"></span> Importing…', 'Reading CSV and writing to Excel. This usually takes 5–10 seconds.');
+  showStatus('processing', '<span class="spinner"></span> Importing…', 'Processing CSV and writing to Excel. This usually takes 5–10 seconds.');
 
   try {
     const csvText = await selectedFile.text();
-
-    const res = await fetch(WORKER_URL, {
+    const res = await fetch(WORKERS[currentType], {
       method: 'POST',
-      headers: {
-        'Content-Type': 'text/plain',
-        'x-filename': selectedFile.name,
-      },
+      headers: { 'Content-Type': 'text/plain', 'x-filename': selectedFile.name },
       body: csvText,
     });
-
     const data = await res.json();
 
     if (data.ok) {
-      showStatus('success', '✓ Import successful', `${data.date} has been added to your dashboard data.`);
-      resultGrid.innerHTML = `
-        <div class="result-metric">
-          <div class="result-label">Books</div>
-          <div class="result-value">$${data.bookSales.toFixed(2)}</div>
-        </div>
-        <div class="result-metric">
-          <div class="result-label">Sidelines</div>
-          <div class="result-value">$${data.sidelinesSales.toFixed(2)}</div>
-        </div>
-        <div class="result-metric">
-          <div class="result-label">Consignment</div>
-          <div class="result-value">$${(data.consignmentSales||0).toFixed(2)}</div>
-        </div>
-      `;
+      if (currentType === 'sales') {
+        showStatus('success', '✓ Sales imported', `${data.date} has been added to your dashboard data.`);
+        resultGrid.className = 'result-grid cols-3';
+        resultGrid.innerHTML = `
+          <div class="result-metric"><div class="result-label">Books</div><div class="result-value">$${data.bookSales.toFixed(2)}</div></div>
+          <div class="result-metric"><div class="result-label">Sidelines</div><div class="result-value">$${data.sidelinesSales.toFixed(2)}</div></div>
+          <div class="result-metric"><div class="result-label">Consignment</div><div class="result-value">$${(data.consignmentSales||0).toFixed(2)}</div></div>
+        `;
+      } else {
+        showStatus('success', '✓ Labor imported', `${data.date} has been added to your dashboard data.`);
+        resultGrid.className = 'result-grid cols-4';
+        resultGrid.innerHTML = `
+          <div class="result-metric"><div class="result-label">Total hours</div><div class="result-value">${data.totalHours}</div></div>
+          <div class="result-metric"><div class="result-label">Total wages</div><div class="result-value">$${data.totalWages.toFixed(2)}</div></div>
+          <div class="result-metric"><div class="result-label">Tax load</div><div class="result-value">$${(data.totalLoaded - data.totalWages).toFixed(2)}</div></div>
+          <div class="result-metric"><div class="result-label">Loaded cost</div><div class="result-value">$${data.totalLoaded.toFixed(2)}</div></div>
+        `;
+      }
       resultGrid.style.display = 'grid';
-      manualReminder.style.display = 'block';
+
+      const fields = MANUAL_FIELDS[currentType];
+      if (fields.length > 0) {
+        document.getElementById('reminderTitle').textContent = 'Still enter manually in Excel';
+        document.getElementById('reminderFields').innerHTML = fields.map(f => `<span class="manual-tag">${f}</span>`).join('');
+        manualReminder.style.display = 'block';
+      }
       resetLink.style.display = 'block';
     } else {
-      showStatus('error', '✗ Import failed', data.error || 'Unknown error — check the Worker logs.');
+      showStatus('error', '✗ Import failed', data.error || 'Unknown error.');
       importBtn.disabled = false;
       resetLink.style.display = 'block';
     }
