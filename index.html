@@ -646,9 +646,9 @@ async function loadData() {
     const d = json.data;
 
     // ── Header ──────────────────────────────────────────────────────────────
-    document.getElementById('monthBadge').textContent = d['current_month_label'] || '—';
-    document.getElementById('updatedTime').textContent = 'Updated ' + new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
-
+  document.getElementById('monthBadge').textContent = d['current_month_label'] || '—';
+document.getElementById('updatedTime').textContent = 'Updated ' + new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+document.getElementById('dataAsOf').textContent = d['data_last_updated'] ? 'Data as of: ' + d['data_last_updated'] : '';
     // ── Revenue Hero ─────────────────────────────────────────────────────────
     const mtd      = raw(d['mtd_revenue']);
     const target   = raw(d['monthly_target']);
