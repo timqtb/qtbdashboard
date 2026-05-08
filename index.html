@@ -366,7 +366,6 @@
     </div>
     <div class="header-right">
       <div class="month-badge" id="monthBadge">—</div>
-      <div class="updated" id="updatedTime">—</div>
       <div class="updated" id="dataAsOf" style="margin-top:3px;">—</div>
    </div>
   </div>
@@ -647,8 +646,7 @@ async function loadData() {
 
     // ── Header ──────────────────────────────────────────────────────────────
   document.getElementById('monthBadge').textContent = d['current_month_label'] || '—';
-document.getElementById('updatedTime').textContent = 'Updated ' + new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
-document.getElementById('dataAsOf').textContent = d['data_last_updated'] ? 'Data as of: ' + d['data_last_updated'] : '';
+  document.getElementById('dataAsOf').textContent = d['data_last_updated'] ? 'Data as of: ' + d['data_last_updated'] : '';
     // ── Revenue Hero ─────────────────────────────────────────────────────────
     const mtd      = raw(d['mtd_revenue']);
     const target   = raw(d['monthly_target']);
